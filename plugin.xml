@@ -21,4 +21,5 @@
   </runtime>
 
   <extension type="WebappServlet" class="com.oxygenxml.webapp.monitoring.MonitoringServlet"/>
+  <extension type="WebappServletFilter" class="ro.sync.servlet.monitoring.MonitoringFilter"/>
 </plugin>
