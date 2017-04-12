@@ -14,6 +14,7 @@ import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
+import com.codahale.metrics.graphite.GraphiteUDP;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.servlets.MetricsServlet;
 import com.codahale.metrics.servlets.ThreadDumpServlet;
@@ -95,11 +96,8 @@ public class MonitoringServlet extends WebappServletPluginExtension{
     if (graphiteServer != null) {
       MetricRegistry registry = (MetricRegistry) servletContext.getAttribute(MonitoringManager.METRICS_REGISTRY_ATTR);
       
-      // Register the memory related metrics.
-      registry.register("memory", new MemoryUsageGaugeSet());
-      
       // Start a reporter to send data to the graphite server.
-      Graphite graphite = new Graphite(graphiteServer);
+      GraphiteUDP graphite = new GraphiteUDP(graphiteServer);
       reporter = GraphiteReporter.forRegistry(registry)
                                           .prefixedWith("oxygenxml-web-author")
                                           .convertRatesTo(TimeUnit.SECONDS)
@@ -107,7 +105,7 @@ public class MonitoringServlet extends WebappServletPluginExtension{
                                           .filter(MetricFilter.ALL)
                                           .build(graphite);
       
-      reporter.start(1, TimeUnit.MINUTES);
+      reporter.start(1, TimeUnit.SECONDS);
     }
   }
   

@@ -13,11 +13,7 @@
   <runtime>
     <librariesFolder name="lib" />
     <library name="target/classes" />
-
-    <!--
-    <librariesFolder name="${user.home}/.m2/repository/io/dropwizard/"/>
-    <librariesFolder name="${user.home}/.m2/repository/com/fasterxml/"/>
-    -->
+    <librariesFolder name="target/lib/"/>
   </runtime>
 
   <extension type="WebappServlet" class="com.oxygenxml.webapp.monitoring.MonitoringServlet"/>
