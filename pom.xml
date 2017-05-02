@@ -31,6 +31,11 @@
       <classifier>classes</classifier>
       <scope>provided</scope>
     </dependency>
+    <!-- <dependency>
+      <groupId>com.splunk</groupId>
+      <artifactId>splunk</artifactId>
+      <version>1.3.0</version>
+    </dependency>  -->
 
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -45,6 +50,11 @@
         <artifactId>metrics-servlets</artifactId>
         <version>${metrics.version}</version>
     </dependency>
+    <dependency>
+	    <groupId>com.damick</groupId>
+		    <artifactId>dropwizard-metrics-cloudwatch</artifactId>
+		    <version>0.2.0</version>
+		</dependency>
     
     <dependency>
         <groupId>io.dropwizard.metrics</groupId>

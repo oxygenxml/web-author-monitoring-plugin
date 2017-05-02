@@ -10,9 +10,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.internal.StaticCredentialsProvider;
+import com.amazonaws.regions.RegionUtils;
+import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsyncClient;
+import com.blacklocus.metrics.CloudWatchReporterBuilder;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.graphite.Graphite;
+import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.graphite.GraphiteUDP;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
@@ -27,7 +33,7 @@ import ro.sync.servlet.monitoring.MonitoringManager;
  * 
  * @author cristi_talau
  */
-public class MonitoringServlet extends WebappServletPluginExtension{
+public class MonitoringServlet extends WebappServletPluginExtension {
 
   /**
    * Unerlying servlet to which we delegate for thread dumps.
@@ -45,7 +51,7 @@ public class MonitoringServlet extends WebappServletPluginExtension{
   /**
    * Reporter that sends monitoring data to a graphite server.
    */
-  private GraphiteReporter reporter = null;
+  private ScheduledReporter reporter = null;
   
   /**
    * Constructor.
@@ -93,9 +99,8 @@ public class MonitoringServlet extends WebappServletPluginExtension{
    */
   private void initGraphiteReporter(ServletContext servletContext) {
     InetSocketAddress graphiteServer = getGraphiteServer();
+    MetricRegistry registry = (MetricRegistry) servletContext.getAttribute(MonitoringManager.METRICS_REGISTRY_ATTR);
     if (graphiteServer != null) {
-      MetricRegistry registry = (MetricRegistry) servletContext.getAttribute(MonitoringManager.METRICS_REGISTRY_ATTR);
-      
       // Start a reporter to send data to the graphite server.
       GraphiteUDP graphite = new GraphiteUDP(graphiteServer);
       reporter = GraphiteReporter.forRegistry(registry)
@@ -104,16 +109,33 @@ public class MonitoringServlet extends WebappServletPluginExtension{
                                           .convertDurationsTo(TimeUnit.MILLISECONDS)
                                           .filter(MetricFilter.ALL)
                                           .build(graphite);
-      
-      reporter.start(1, TimeUnit.SECONDS);
     }
+    System.out.println("aws credentials set!");
+    ClientConfiguration configuration = new ClientConfiguration();
+    configuration.setProxyHost(/*proxy host*/"");
+    configuration.setProxyPort(/*proxy port (int)*/);
+    
+    AmazonCloudWatchAsyncClient awsClient = new AmazonCloudWatchAsyncClient(
+        new StaticCredentialsProvider(
+            new BasicAWSCredentials(/*accessKey*/"", /*secret*/"")),
+        configuration
+    );
+    awsClient.setRegion(RegionUtils.getRegion(/*region*/""));
+    
+    reporter = new CloudWatchReporterBuilder()
+      .withNamespace("webapp-metrics"/*ExampleMetrics.class.getSimpleName()*/)
+      .withRegistry(registry)
+      .withClient(awsClient)
+    .build();
+  reporter.start(1, TimeUnit.SECONDS);
+    
   }
   
   /**
    * @return The configured Graphite server address.
    */
   private InetSocketAddress getGraphiteServer() {
-    String graphiteServer = System.getenv("GRAPHITE_SERVER");
+    String graphiteServer = "localhost:2003";
 
     if (graphiteServer == null || graphiteServer.trim().length() == 0) {
       return null;
