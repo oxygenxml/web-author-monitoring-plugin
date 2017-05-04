@@ -1,6 +1,8 @@
 package com.oxygenxml.webapp.monitoring;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Map;
@@ -19,15 +21,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import ro.sync.ecss.extensions.api.webapp.access.WebappPluginWorkspace;
-import ro.sync.servlet.RESTDocumentManager;
-
 import com.codahale.metrics.Clock;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+
+import ro.sync.ecss.extensions.api.webapp.access.WebappPluginWorkspace;
 
 /**
  * Tests for the monitoring filter.
@@ -210,7 +211,7 @@ public class MonitoringFilterTest {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     Mockito.when(request.getContextPath()).thenReturn("/webapp");
     Mockito.when(request.getRequestURL()).thenReturn(
-        new StringBuffer().append(RESTDocumentManager."http://localhost/webapp/rest/" + WebappPluginWorkspace.restApiVersion + "/doc/load/url1"));
+        new StringBuffer().append("http://localhost/webapp/rest/" + WebappPluginWorkspace.restApiVersion + "/doc/load/url1"));
     Mockito.when(request.getPathInfo()).thenReturn("/doc/load/url1");
     
     String label = filter.computeLabel(request);
