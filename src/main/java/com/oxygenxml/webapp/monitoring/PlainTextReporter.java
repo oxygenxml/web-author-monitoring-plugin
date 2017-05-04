@@ -87,7 +87,7 @@ public class PlainTextReporter extends ScheduledReporter {
     
     try {
       String metricsJson = mapper.writer().writeValueAsString(metrics);
-      metricsLogger.info(metricsJson);
+      metricsLogger.info(metricsJson + '\n');
     } catch (Exception e) {
       logger.error(e, e);
     }
