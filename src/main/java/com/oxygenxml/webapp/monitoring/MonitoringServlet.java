@@ -7,7 +7,6 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,7 +30,6 @@ import com.codahale.metrics.servlets.MetricsServlet;
 import com.codahale.metrics.servlets.ThreadDumpServlet;
 
 import ro.sync.ecss.extensions.api.webapp.plugin.WebappServletPluginExtension;
-import ro.sync.servlet.monitoring.MonitoringManager;
 
 /**
  * Servlet that exposes monitoring information.
@@ -57,12 +55,7 @@ public class MonitoringServlet extends WebappServletPluginExtension {
    * Unerlying servlet to which we delegate for metrics serialization as JSON.
    */
   private MetricsServlet metricsServlet;
-  /**
-   * The monitoring manager.
-   */
-  private final MonitoringManager monitoringManager;
-  
-  /**
+   /**
    * Reporter that sends monitoring data to a graphite server.
    */
   private ScheduledReporter reporter = null;
@@ -72,13 +65,11 @@ public class MonitoringServlet extends WebappServletPluginExtension {
    */
   public MonitoringServlet() {
     threadDumpServlet = new ThreadDumpServlet();
-    monitoringManager = new MonitoringManager();
   }
 
   @Override
   public void init() throws ServletException {
     ServletContext servletContext = getServletConfig().getServletContext();
-    monitoringManager.contextInitialized(new ServletContextEvent(servletContext));
     MetricRegistry registry = (MetricRegistry) servletContext.getAttribute(METRICS_REGISTRY_ATTR_NAME);
     
     initReporter(registry);

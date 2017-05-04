@@ -9,6 +9,8 @@ import java.util.Map;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -29,6 +31,7 @@ import com.google.common.annotations.VisibleForTesting;
 import ro.sync.exml.plugin.PluginExtension;
 import ro.sync.servlet.RESTDocumentControllers;
 import ro.sync.servlet.RESTDocumentManager;
+import ro.sync.servlet.monitoring.MonitoringManager;
 
 /**
  * Custom filter that monitors the frequency of error occurrences and the
@@ -53,6 +56,20 @@ public class MonitoringFilter implements Filter, PluginExtension {
    * Label used for all other requests.  
    */
   private static final String OTHERS_LABEL = "others";
+  
+
+
+
+  /**
+   * REST path of the edit actions.
+   */
+  private static final String editPath = RESTDocumentControllers.class.getAnnotation(Path.class).value();
+
+  /**
+   * REST path of the document loading endpoint.
+   */
+  private static final String docLoadPath = RESTDocumentManager.class.getAnnotation(Path.class).value() + "/load";
+
   /**
    * Map between the REST method identifier and its duration Timer.
    */
@@ -73,18 +90,22 @@ public class MonitoringFilter implements Filter, PluginExtension {
   private Clock clock = Clock.defaultClock();
 
   /**
-   * REST path of the edit actions.
+   * The monitoring manager.
    */
-  private static final String editPath = RESTDocumentControllers.class.getAnnotation(Path.class).value();
+  private MonitoringManager monitoringManager;
 
   /**
-   * REST path of the document loading endpoint.
+   * The servlet context.
    */
-  private static final String docLoadPath = RESTDocumentManager.class.getAnnotation(Path.class).value() + "/load";
-
+  private ServletContext servletContext;
+  
   @Override
   public void init(FilterConfig filterConfig) throws ServletException {
+    servletContext = filterConfig.getServletContext();
+    monitoringManager = new MonitoringManager();
+    monitoringManager.contextInitialized(new ServletContextEvent(servletContext));
     registry = (MetricRegistry) filterConfig.getServletContext().getAttribute(MonitoringServlet.METRICS_REGISTRY_ATTR_NAME);
+    
     durations = new HashMap<String, Timer>();
     errors = new HashMap<String, Meter>();
   }
@@ -240,7 +261,7 @@ public class MonitoringFilter implements Filter, PluginExtension {
 
   @Override
   public void destroy() {
-    // Noting to do.
+    monitoringManager.contextDestroyed(new ServletContextEvent(servletContext));
   }
   
   /**
