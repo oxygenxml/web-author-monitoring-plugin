@@ -17,5 +17,5 @@
   </runtime>
 
   <extension type="WebappServlet" class="com.oxygenxml.webapp.monitoring.MonitoringServlet"/>
-  <extension type="WebappServletFilter" class="com.oxygenxml.webapp.monitoring.MonitoringFilterPlugin"/>
+  <extension type="WebappServletFilter" class="com.oxygenxml.webapp.monitoring.MonitoringFilter"/>
 </plugin>

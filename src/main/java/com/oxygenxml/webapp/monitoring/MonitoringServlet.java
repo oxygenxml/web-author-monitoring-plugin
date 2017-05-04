@@ -40,6 +40,11 @@ import ro.sync.servlet.monitoring.MonitoringManager;
  */
 public class MonitoringServlet extends WebappServletPluginExtension {
   /**
+   * Metrics registry attribute name.
+   */
+  public static final String METRICS_REGISTRY_ATTR_NAME = "ro.sync.monitoring.registry";
+
+  /**
    * Logger for logging.
    */
   private static final Logger logger = Logger.getLogger(MonitoringServlet.class.getName());
@@ -74,7 +79,7 @@ public class MonitoringServlet extends WebappServletPluginExtension {
   public void init() throws ServletException {
     ServletContext servletContext = getServletConfig().getServletContext();
     monitoringManager.contextInitialized(new ServletContextEvent(servletContext));
-    MetricRegistry registry = (MetricRegistry) servletContext.getAttribute("ro.sync.monitoring.registry");
+    MetricRegistry registry = (MetricRegistry) servletContext.getAttribute(METRICS_REGISTRY_ATTR_NAME);
     
     initReporter(registry);
     
