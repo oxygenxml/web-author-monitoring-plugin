@@ -29,6 +29,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
 import ro.sync.ecss.extensions.api.webapp.access.WebappPluginWorkspace;
+import ro.sync.exml.workspace.api.PluginWorkspaceProvider;
 
 /**
  * Tests for the monitoring filter.
@@ -51,6 +52,9 @@ public class MonitoringFilterTest {
    */
   @Before
   public void setUp() throws Exception {
+    WebappPluginWorkspace pluginWorkspace = Mockito.mock(WebappPluginWorkspace.class);
+    PluginWorkspaceProvider.setPluginWorkspace(pluginWorkspace);
+    
     filter = Mockito.spy(new MonitoringFilter());
     
     registry = new MetricRegistry();
