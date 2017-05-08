@@ -58,6 +58,7 @@ public class PlainTextReporter extends ScheduledReporter {
     metricsLogger = Logger.getLogger("com.oxygenxml.metrics");
     ConsoleAppender appender = new ConsoleAppender(new NoFormatLayout());
     metricsLogger.addAppender(appender);
+    metricsLogger.setAdditivity(false);
     
     // If no special log level was set for this logger, log all events.
     if (metricsLogger.getLevel() == null) {
