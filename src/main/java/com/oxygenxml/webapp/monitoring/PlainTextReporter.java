@@ -85,6 +85,7 @@ public class PlainTextReporter extends ScheduledReporter {
     metrics.putAll(histograms);
     metrics.putAll(meters);
     metrics.putAll(timers);
+    metrics.put("timestamp", System.currentTimeMillis());
     
     try {
       String metricsJson = mapper.writer().writeValueAsString(metrics);
