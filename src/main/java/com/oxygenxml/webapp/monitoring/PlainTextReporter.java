@@ -2,6 +2,7 @@ package com.oxygenxml.webapp.monitoring;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
@@ -80,11 +81,11 @@ public class PlainTextReporter extends ScheduledReporter {
       SortedMap<String, Timer> timers) {
 
     Map<String, Object> metrics = new HashMap<String, Object>();
-    metrics.putAll(gauges);
-    metrics.putAll(counters);
-    metrics.putAll(histograms);
-    metrics.putAll(meters);
-    metrics.putAll(timers);
+    addMetrics(gauges, metrics);
+    addMetrics(counters, metrics);
+    addMetrics(histograms, metrics);
+    addMetrics(meters, metrics);
+    addMetrics(timers, metrics);
     metrics.put("timestamp", System.currentTimeMillis());
     
     try {
@@ -92,6 +93,17 @@ public class PlainTextReporter extends ScheduledReporter {
       metricsLogger.info(metricsJson + '\n');
     } catch (Exception e) {
       logger.error(e, e);
+    }
+  }
+
+  /**
+   * Add some metrics to the final map, rewriting the keys to be AWS CloudWatch friendly.
+   * @param metrics
+   * @param allMetrics
+   */
+  private <T> void addMetrics(Map<String, T> metrics, Map<String, Object> allMetrics) {
+    for (Entry<String, T> entry : metrics.entrySet()) {
+      allMetrics.put(entry.getKey().replace('.', '-'), entry.getValue());
     }
   }
 }
