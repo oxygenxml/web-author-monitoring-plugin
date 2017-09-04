@@ -25,7 +25,10 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.graphite.GraphiteUDP;
+import com.codahale.metrics.jvm.ClassLoadingGaugeSet;
+import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
+import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.codahale.metrics.servlets.MetricsServlet;
 import com.codahale.metrics.servlets.ThreadDumpServlet;
 
@@ -78,6 +81,11 @@ public class MonitoringServlet extends WebappServletPluginExtension {
 
     // Get the metrics registry populated by Web Author.
     registry.register("memory", new MemoryUsageGaugeSet());
+    registry.register("classes", new ClassLoadingGaugeSet());
+    registry.register("threads", new ThreadStatesGaugeSet());
+    registry.register("gc", new GarbageCollectorMetricSet());
+    
+    registry.register("webauthor", new WebAuthorApiMetrics());
     
     metricsServlet = new MetricsServlet(registry);
     metricsServlet.init(getServletConfig());
