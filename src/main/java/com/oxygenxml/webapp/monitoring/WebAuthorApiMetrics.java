@@ -1,6 +1,5 @@
 package com.oxygenxml.webapp.monitoring;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.Map;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
-import com.google.common.collect.ImmutableMap;
 
 import ro.sync.ecss.extensions.api.webapp.access.WebappPluginWorkspace;
 import ro.sync.exml.workspace.api.PluginWorkspaceProvider;
@@ -46,7 +44,8 @@ public class WebAuthorApiMetrics implements MetricSet{
       metrics.put(gauge, new Gauge<Integer>() {
         @Override
         public Integer getValue() {
-          return Integer.valueOf(lastMetrics.get(gauge));
+          Map<String, String> webAuthorMetrics = getWebAuthorMetrics();
+          return Integer.valueOf(webAuthorMetrics.get(gauge));
         }
       });
     }
