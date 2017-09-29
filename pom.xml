@@ -6,7 +6,7 @@
 
   <groupId>com.oxygenxml</groupId>
   <artifactId>web-author-monitoring</artifactId>
-  <version>19.1-SNAPSHOT</version>
+  <version>20.0-SNAPSHOT</version>
 
   <properties>
     <oxygen.sdk.version>${project.version}</oxygen.sdk.version>
