@@ -3,8 +3,8 @@ package com.oxygenxml.webapp.monitoring;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -63,12 +63,12 @@ public class MonitoringFilter implements Filter, PluginExtension {
   /**
    * REST path of the edit actions.
    */
-  private static final String editPath = RESTDocumentControllers.class.getAnnotation(Path.class).value();
+  private static final String EDIT_PATH = RESTDocumentControllers.class.getAnnotation(Path.class).value();
 
   /**
    * REST path of the document loading endpoint.
    */
-  private static final String docLoadPath = RESTDocumentManager.class.getAnnotation(Path.class).value() + "/load";
+  private static final String DOC_LOAD_PATH = RESTDocumentManager.class.getAnnotation(Path.class).value() + "/load";
 
   /**
    * Map between the REST method identifier and its duration Timer.
@@ -78,7 +78,7 @@ public class MonitoringFilter implements Filter, PluginExtension {
   /**
    * Map between the REST method identifier and its error meter.
    */
-  private HashMap<String, Meter> errors;
+  private Map<String, Meter> errors;
 
   /**
    * The metric registry.
@@ -106,8 +106,8 @@ public class MonitoringFilter implements Filter, PluginExtension {
     monitoringManager.contextInitialized(new ServletContextEvent(servletContext));
     registry = (MetricRegistry) filterConfig.getServletContext().getAttribute(MonitoringServlet.METRICS_REGISTRY_ATTR_NAME);
     
-    durations = new HashMap<>();
-    errors = new HashMap<>();
+    durations = new ConcurrentHashMap<>();
+    errors = new ConcurrentHashMap<>();
   }
 
   @Override
@@ -159,13 +159,15 @@ public class MonitoringFilter implements Filter, PluginExtension {
         // Cannot happen.
       }
 
-      if (url.getPath().startsWith(httpRequest.getContextPath() + editPath)) {
-        // We group all edits together.
-        label = EDIT_LABEL;
-      } else if (url.getPath().startsWith(httpRequest.getContextPath() + docLoadPath)) {
-        label = DOC_LOAD_LABEL;
-      } else {
-        label = OTHERS_LABEL;
+      if (url != null) {
+        if (url.getPath().startsWith(httpRequest.getContextPath() + EDIT_PATH)) {
+          // We group all edits together.
+          label = EDIT_LABEL;
+        } else if (url.getPath().startsWith(httpRequest.getContextPath() + DOC_LOAD_PATH)) {
+          label = DOC_LOAD_LABEL;
+        } else {
+          label = OTHERS_LABEL;
+        }
       }
     }
     return label;

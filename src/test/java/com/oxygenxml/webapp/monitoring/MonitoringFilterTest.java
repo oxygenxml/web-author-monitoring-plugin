@@ -154,7 +154,7 @@ public class MonitoringFilterTest {
 
     // Assert that the error rate is around .5.
     Gauge<?> gauge = registry.getGauges().values().iterator().next();
-    assertEquals(.5, (Double)gauge.getValue(), .1);
+    assertEquals(.5, .1, (Double)gauge.getValue());
   }
   
   /**
