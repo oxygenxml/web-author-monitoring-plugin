@@ -38,16 +38,10 @@ public class WebAuthorApiMetrics implements MetricSet{
   
   @Override
   public Map<String, Metric> getMetrics() {
-    Map<String, Metric> metrics = new HashMap<String, Metric>();
+    Map<String, Metric> metrics = new HashMap<>();
     
     for (final String gauge: gaugeNames) {
-      metrics.put(gauge, new Gauge<Integer>() {
-        @Override
-        public Integer getValue() {
-          Map<String, String> webAuthorMetrics = getWebAuthorMetrics();
-          return Integer.valueOf(webAuthorMetrics.get(gauge));
-        }
-      });
+      metrics.put(gauge, (Gauge<Integer>) () -> Integer.valueOf(getWebAuthorMetrics().get(gauge)));
     }
     
     return metrics;

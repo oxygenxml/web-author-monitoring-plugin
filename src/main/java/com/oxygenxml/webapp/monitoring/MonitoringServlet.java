@@ -41,6 +41,11 @@ import ro.sync.ecss.extensions.api.webapp.plugin.WebappServletPluginExtension;
  */
 public class MonitoringServlet extends WebappServletPluginExtension {
   /**
+   * Namespace used for metrics.
+   */
+  private static final String METRICS_NAMESPACE = "oxygenxml-web-author";
+
+  /**
    * Metrics registry attribute name.
    */
   public static final String METRICS_REGISTRY_ATTR_NAME = "ro.sync.monitoring.registry";
@@ -58,10 +63,6 @@ public class MonitoringServlet extends WebappServletPluginExtension {
    * Unerlying servlet to which we delegate for metrics serialization as JSON.
    */
   private MetricsServlet metricsServlet;
-   /**
-   * Reporter that sends monitoring data to a graphite server.
-   */
-  private ScheduledReporter reporter = null;
   
   /**
    * Constructor.
@@ -97,7 +98,7 @@ public class MonitoringServlet extends WebappServletPluginExtension {
    * @param registry The metrics registry.
    */
   private void initReporter(MetricRegistry registry) {
-    reporter = this.getGraphiteReporter(registry);
+    ScheduledReporter reporter = this.getGraphiteReporter(registry);
     if (reporter == null) {
       reporter = this.getCloudWatchReporter(registry);
     }
@@ -135,7 +136,7 @@ public class MonitoringServlet extends WebappServletPluginExtension {
       // Start a reporter to send data to the graphite server.
       GraphiteUDP graphite = new GraphiteUDP(graphiteServer);
       return GraphiteReporter.forRegistry(registry)
-                                          .prefixedWith("oxygenxml-web-author")
+                                          .prefixedWith(METRICS_NAMESPACE)
                                           .convertRatesTo(TimeUnit.SECONDS)
                                           .convertDurationsTo(TimeUnit.MILLISECONDS)
                                           .filter(MetricFilter.ALL)
@@ -179,7 +180,7 @@ public class MonitoringServlet extends WebappServletPluginExtension {
       awsClient.setRegion(RegionUtils.getRegion(System.getenv("AWS_DEFAULT_REGION")));
       
       return new CloudWatchReporterBuilder()
-          .withNamespace("oxygenxml-web-author")
+          .withNamespace(METRICS_NAMESPACE)
           .withRegistry(registry)
           .withClient(awsClient)
           .build();
@@ -196,7 +197,7 @@ public class MonitoringServlet extends WebappServletPluginExtension {
    */
   private PlainTextReporter getLog4jReporter(MetricRegistry registry) {
     return new PlainTextReporter(registry, 
-        "oxygenxml-web-author", TimeUnit.MILLISECONDS, TimeUnit.MILLISECONDS);
+        METRICS_NAMESPACE, TimeUnit.MILLISECONDS, TimeUnit.MILLISECONDS);
   }
 
   /**

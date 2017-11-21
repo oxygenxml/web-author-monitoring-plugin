@@ -1,5 +1,7 @@
 package com.oxygenxml.webapp.monitoring;
 
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -80,7 +82,7 @@ public class PlainTextReporter extends ScheduledReporter {
       SortedMap<String, Meter> meters, 
       SortedMap<String, Timer> timers) {
 
-    Map<String, Object> metrics = new HashMap<String, Object>();
+    Map<String, Object> metrics = new HashMap<>();
     addMetrics(gauges, metrics);
     addMetrics(counters, metrics);
     addMetrics(histograms, metrics);
@@ -89,7 +91,8 @@ public class PlainTextReporter extends ScheduledReporter {
     metrics.put("timestamp", System.currentTimeMillis());
     
     try {
-      String metricsJson = mapper.writer().writeValueAsString(metrics);
+      String metricsJson = AccessController.doPrivileged(
+          (PrivilegedExceptionAction<String>) () -> mapper.writer().writeValueAsString(metrics));
       metricsLogger.info(metricsJson + '\n');
     } catch (Exception e) {
       logger.error(e, e);

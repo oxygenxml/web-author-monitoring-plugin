@@ -106,8 +106,8 @@ public class MonitoringFilter implements Filter, PluginExtension {
     monitoringManager.contextInitialized(new ServletContextEvent(servletContext));
     registry = (MetricRegistry) filterConfig.getServletContext().getAttribute(MonitoringServlet.METRICS_REGISTRY_ATTR_NAME);
     
-    durations = new HashMap<String, Timer>();
-    errors = new HashMap<String, Meter>();
+    durations = new HashMap<>();
+    errors = new HashMap<>();
   }
 
   @Override
@@ -156,6 +156,7 @@ public class MonitoringFilter implements Filter, PluginExtension {
       try {
         url = new URL(httpRequest.getRequestURL().toString());
       } catch (MalformedURLException e) {
+        // Cannot happen.
       }
 
       if (url.getPath().startsWith(httpRequest.getContextPath() + editPath)) {
@@ -216,7 +217,7 @@ public class MonitoringFilter implements Filter, PluginExtension {
     public int getStatus() {
       return httpStatus;
     }
-  };
+  }
 
   /**
    * Returns the meter for errors and registers it.

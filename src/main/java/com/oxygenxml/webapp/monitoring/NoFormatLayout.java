@@ -21,5 +21,6 @@ public class NoFormatLayout extends Layout {
   
   @Override
   public void activateOptions() {
+    // Nothing to do here.
   }
 }
