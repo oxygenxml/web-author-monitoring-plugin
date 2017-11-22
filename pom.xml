@@ -9,8 +9,8 @@
     <artifactId>oxygen-superpom-standard</artifactId>
     <version>20.0-SNAPSHOT</version>
   </parent>
-  <artifactId>web-author-monitoring</artifactId>
-  <name>Web Author Monitoring</name>
+  <artifactId>web-author-monitoring-plugin</artifactId>
+  <name>Web Author Monitoring Plugin</name>
   <description>Web Author plugin that logs monitoring information</description>
 
   <properties>
