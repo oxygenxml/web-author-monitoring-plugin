@@ -43,7 +43,6 @@ public class MonitoringFilter implements Filter, PluginExtension {
   /**
    * Label used for edit requests.
    */
-  @VisibleForTesting
   static final String EDIT_LABEL = "edit";
   
   /**

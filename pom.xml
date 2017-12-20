@@ -33,27 +33,15 @@
         <artifactId>metrics-servlets</artifactId>
         <version>${metrics.version}</version>
     </dependency>
-    
     <dependency>
-      <groupId>com.damick</groupId>
-      <artifactId>dropwizard-metrics-cloudwatch</artifactId>
-      <version>0.2.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.eclipse.jetty</groupId>
-          <artifactId>jetty-server</artifactId>
-        </exclusion>
-      </exclusions>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-jvm</artifactId>
+        <version>${metrics.version}</version>
     </dependency>
     
     <dependency>
         <groupId>io.dropwizard.metrics</groupId>
         <artifactId>metrics-graphite</artifactId>
-        <version>${metrics.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>io.dropwizard.metrics</groupId>
-        <artifactId>metrics-jvm</artifactId>
         <version>${metrics.version}</version>
     </dependency>
     
@@ -62,18 +50,6 @@
       <artifactId>oxygen-webapp</artifactId>
       <classifier>classes</classifier>
       <version>${project.version}</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>2.1</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

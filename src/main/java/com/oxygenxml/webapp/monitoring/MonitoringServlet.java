@@ -2,8 +2,6 @@ package com.oxygenxml.webapp.monitoring;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContext;
@@ -11,15 +9,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
-
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.internal.StaticCredentialsProvider;
-import com.amazonaws.regions.RegionUtils;
-import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsyncClient;
-import com.blacklocus.metrics.CloudWatchReporter;
-import com.blacklocus.metrics.CloudWatchReporterBuilder;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
@@ -49,11 +38,6 @@ public class MonitoringServlet extends WebappServletPluginExtension {
    * Metrics registry attribute name.
    */
   public static final String METRICS_REGISTRY_ATTR_NAME = "ro.sync.monitoring.registry";
-
-  /**
-   * Logger for logging.
-   */
-  private static final Logger logger = Logger.getLogger(MonitoringServlet.class.getName());
 
   /**
    * Unerlying servlet to which we delegate for thread dumps.
@@ -100,9 +84,6 @@ public class MonitoringServlet extends WebappServletPluginExtension {
   private void initReporter(MetricRegistry registry) {
     ScheduledReporter reporter = this.getGraphiteReporter(registry);
     if (reporter == null) {
-      reporter = this.getCloudWatchReporter(registry);
-    }
-    if (reporter == null) {
       reporter = this.getLog4jReporter(registry);
     }
     reporter.start(1, TimeUnit.MINUTES);
@@ -143,49 +124,6 @@ public class MonitoringServlet extends WebappServletPluginExtension {
                                           .build(graphite);
       
     }
-    return null;
-  }
-  
-  /**
-   * Initialize the CloudWatch reporter.
-   * 
-   * @param registry The metrics registry.
-   * 
-   * @return The reporter, or null if not configured.
-   */
-  private CloudWatchReporter getCloudWatchReporter(MetricRegistry registry) {
-    String accessKeyId = System.getenv("AWS_ACCESS_KEY_ID");
-    String secretAccessKey = System.getenv("AWS_SECRET_ACCESS_KEY");
-    
-    if (accessKeyId != null && secretAccessKey != null) {
-      ClientConfiguration configuration = new ClientConfiguration();
-      String proxy = System.getenv("https_proxy");
-      if (proxy != null) {
-        URL proxyUrl;
-        try {
-          proxyUrl = new URL(proxy);
-          int port = proxyUrl.getPort();
-          configuration.setProxyHost(proxyUrl.getHost());
-          configuration.setProxyPort(port == -1 ? 443 : port);
-        } catch (MalformedURLException e) {
-          logger.debug("Invalid proxy address: " + proxy, e);
-        }
-      }
-      
-      AmazonCloudWatchAsyncClient awsClient = new AmazonCloudWatchAsyncClient(
-          new StaticCredentialsProvider(
-              new BasicAWSCredentials(accessKeyId, secretAccessKey)),
-          configuration
-          );
-      awsClient.setRegion(RegionUtils.getRegion(System.getenv("AWS_DEFAULT_REGION")));
-      
-      return new CloudWatchReporterBuilder()
-          .withNamespace(METRICS_NAMESPACE)
-          .withRegistry(registry)
-          .withClient(awsClient)
-          .build();
-    }
-    
     return null;
   }
   
