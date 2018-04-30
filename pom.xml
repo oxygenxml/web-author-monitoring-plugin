@@ -17,15 +17,6 @@
     <metrics.version>3.1.0</metrics.version>
   </properties>
 
-  <repositories>
-    <!-- Download artifacts from the oXygem XML Maven Repository-->
-    <repository>
-      <id>oxygenxml</id>
-      <name>oXygen XML SDK Maven Repository</name>
-      <url>http://oxygenxml.com/maven/</url>
-    </repository>
-  </repositories>
-
   <dependencies>
     <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-servlet -->
     <dependency>
