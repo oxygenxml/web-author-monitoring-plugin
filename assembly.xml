@@ -10,11 +10,11 @@
   <files>
     <file>
       <source>LICENSE</source>
-      <filtered>true</filtered>
+      <outputDirectory>/</outputDirectory>
     </file>
     <file>
       <source>third-party-components.xml</source>
-      <filtered>true</filtered>
+      <outputDirectory>/</outputDirectory>
     </file>
     <file>
       <source>target/build/${project.build.finalName}.jar</source>
