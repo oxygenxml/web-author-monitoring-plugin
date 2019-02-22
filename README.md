@@ -35,3 +35,9 @@ You have to set the following environment variables:
 - https_proxy - in cases you use one 
 
 By extending this plugin you can send the collected metrics also to other metrics servers.
+
+Copyright and License
+---------------------
+Copyright 2018 Syncro Soft SRL.
+
+This project is licensed under [Apache License 2.0](https://github.com/oxygenxml/web-author-monitoring-plugin/blob/master/LICENSE)
