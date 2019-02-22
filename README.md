@@ -1,4 +1,4 @@
-oXygen XML Web Author Monitoring plugin
+Oxygen XML Web Author Monitoring plugin
 =======================================
 
 This plugin is used to provide monitoring information from a running Web Author instance.
