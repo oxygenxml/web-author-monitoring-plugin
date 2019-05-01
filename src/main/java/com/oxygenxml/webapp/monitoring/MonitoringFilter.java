@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import javax.ws.rs.Path;
 
+import org.apache.log4j.Logger;
+
 import com.codahale.metrics.Clock;
 import com.codahale.metrics.ExponentiallyDecayingReservoir;
 import com.codahale.metrics.Meter;
@@ -40,6 +42,11 @@ import ro.sync.servlet.monitoring.MonitoringManager;
  * @author cristi_talau
  */
 public class MonitoringFilter implements Filter, PluginExtension {
+  /**
+   * Logger for logging.
+   */
+  private static final Logger logger = Logger.getLogger(MonitoringFilter.class.getName());
+
   /**
    * Label used for edit requests.
    */
@@ -125,13 +132,29 @@ public class MonitoringFilter implements Filter, PluginExtension {
           Meter errorRate = getErrorMeter(label);
           errorRate.mark();
         }
-        context.stop();
+        long durationSeconds = context.stop();
+        logLargeDuration(request, durationSeconds);
       }
     } else {
       // Do not monitor non-rest requests.
       chain.doFilter(request, response);
     }
 
+  }
+
+  /**
+   * Log requests whose duration took too long.
+   * 
+   * @param request The request.
+   * @param durationSeconds The duration.
+   */
+  private void logLargeDuration(ServletRequest request, long durationSeconds) {
+    if (durationSeconds > 10 * 1000L && request instanceof HttpServletRequest) {
+      HttpServletRequest httpServletRequest = (HttpServletRequest)request;
+      String url = httpServletRequest.getRequestURL().toString();
+      String queryString = httpServletRequest.getQueryString();
+      logger.warn("Long request: " + url + "?" + queryString + " - took " + (durationSeconds / 1000.) + "seconds");
+    }
   }
 
   /**

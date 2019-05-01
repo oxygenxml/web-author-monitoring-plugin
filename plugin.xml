@@ -18,4 +18,5 @@
 
   <extension type="WebappServlet" class="com.oxygenxml.webapp.monitoring.MonitoringServlet"/>
   <extension type="WebappServletFilter" class="com.oxygenxml.webapp.monitoring.MonitoringFilter"/>
+  <extension type="WorkspaceAccess" class="com.oxygenxml.webapp.monitoring.DocSizeMonitor"/>
 </plugin>
