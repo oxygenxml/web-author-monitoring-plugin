@@ -88,7 +88,8 @@ public class MonitoringFilterTest {
     String labelString = "label";
     Mockito.doReturn(labelString).when(filter).computeLabel(Mockito.<ServletRequest>any());
 
-    ServletRequest request = Mockito.mock(HttpServletRequest.class);
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    Mockito.when(request.getRequestURL()).thenReturn(new StringBuffer("/path/to/rest/endpoint"));
     ServletResponse response = Mockito.mock(HttpServletResponse.class);
     FilterChain chain = Mockito.mock(FilterChain.class);
     
