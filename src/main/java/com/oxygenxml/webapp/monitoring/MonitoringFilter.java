@@ -153,7 +153,8 @@ public class MonitoringFilter implements Filter, PluginExtension {
       HttpServletRequest httpServletRequest = (HttpServletRequest)request;
       String url = httpServletRequest.getRequestURL().toString();
       String queryString = httpServletRequest.getQueryString();
-      logger.warn("Long request: " + url + "?" + queryString + " - took " + (durationSeconds / 1000.) + "seconds");
+      String urlString = queryString != null ? url + "?" + queryString : url; 
+      logger.warn("Long request: " + urlString + " - took " + (durationSeconds / 1000.) + "seconds");
     }
   }
 
