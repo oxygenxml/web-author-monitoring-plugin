@@ -132,8 +132,8 @@ public class MonitoringFilter implements Filter, PluginExtension {
           Meter errorRate = getErrorMeter(label);
           errorRate.mark();
         }
-        long durationSeconds = context.stop();
-        logLargeDuration(request, durationSeconds);
+        long durationNanoSeconds = context.stop();
+        logLargeDuration(request, durationNanoSeconds);
       }
     } else {
       // Do not monitor non-rest requests.
@@ -146,15 +146,16 @@ public class MonitoringFilter implements Filter, PluginExtension {
    * Log requests whose duration took too long.
    * 
    * @param request The request.
-   * @param durationSeconds The duration.
+   * @param durationNanoSeconds The duration.
    */
-  private void logLargeDuration(ServletRequest request, long durationSeconds) {
-    if (durationSeconds > 10 * 1000L && request instanceof HttpServletRequest) {
+  private void logLargeDuration(ServletRequest request, long durationNanoSeconds) {
+    if (durationNanoSeconds > 10 * 1000L && request instanceof HttpServletRequest) {
       HttpServletRequest httpServletRequest = (HttpServletRequest)request;
       String url = httpServletRequest.getRequestURL().toString();
       String queryString = httpServletRequest.getQueryString();
       String urlString = queryString != null ? url + "?" + queryString : url; 
-      logger.warn("Long request: " + urlString + " - took " + (durationSeconds / 1000.) + "seconds");
+      double nano = 1000. * 1000. * 1000.;
+      logger.warn("Long request: " + urlString + " - took " + (durationNanoSeconds / nano) + "seconds");
     }
   }
 
