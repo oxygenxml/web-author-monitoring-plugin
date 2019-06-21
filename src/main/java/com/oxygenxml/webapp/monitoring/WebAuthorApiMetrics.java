@@ -23,8 +23,11 @@ public class WebAuthorApiMetrics implements MetricSet{
    * Name of the gauge metrics exported by Web Author.
    */
   private static final List<String> gaugeNames = Arrays.asList(
-      "http_conn_pool_max", "http_conn_pool_pending", "http_conn_pool_leased", "http_conn_pool_available");
-  
+      // HTTP connection pools
+      "http_conn_pool_max", "http_conn_pool_pending", "http_conn_pool_leased", "http_conn_pool_available",
+      // Error scanners cache
+      "validator_cache_miss", "validator_cache_req", "validator_cache_avg_load_time_ms", "validator_cache_eviction"
+      );
   /**
    * The last metrics read from Web Author.
    */
@@ -41,7 +44,7 @@ public class WebAuthorApiMetrics implements MetricSet{
     Map<String, Metric> metrics = new HashMap<>();
     
     for (final String gauge: gaugeNames) {
-      metrics.put(gauge, (Gauge<Integer>) () -> Integer.valueOf(getWebAuthorMetrics().get(gauge)));
+      metrics.put(gauge, (Gauge<Long>) () -> Long.valueOf(getWebAuthorMetrics().get(gauge)));
     }
     
     return metrics;
