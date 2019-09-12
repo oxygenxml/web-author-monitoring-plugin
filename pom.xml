@@ -14,10 +14,17 @@
   <description>Web Author plugin that logs monitoring information</description>
 
   <properties>
-    <metrics.version>3.1.0</metrics.version>
+    <metrics.version>4.1.0</metrics.version>
   </properties>
 
   <dependencies>
+	<!-- jackson-databind is also a dependency of metrics-servlets:4.1.0, but that version
+		there has a vulnerability. So, force a newer version. -->
+	<dependency>
+		<groupId>com.fasterxml.jackson.core</groupId>
+		<artifactId>jackson-databind</artifactId>
+		<version>2.9.9.3</version>
+	</dependency>
     <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-servlet -->
     <dependency>
         <groupId>io.dropwizard.metrics</groupId>
