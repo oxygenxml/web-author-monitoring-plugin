@@ -1,5 +1,6 @@
 package com.oxygenxml.webapp.monitoring;
 
+import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
@@ -8,9 +9,14 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.log4j.builders.layout.PatternLayoutBuilder;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
@@ -32,7 +38,7 @@ public class PlainTextReporter extends ScheduledReporter {
   /**
    * Logger for logging.
    */
-  private static final Logger logger = Logger.getLogger(MonitoringServlet.class.getName());
+  private static final Logger logger = LogManager.getLogger(MonitoringServlet.class.getName());
 
   /**
    * The JSON object mapper.
@@ -42,7 +48,7 @@ public class PlainTextReporter extends ScheduledReporter {
   /**
    * Logger used to write metrics.
    */
-  private final Logger metricsLogger;
+  private final org.apache.logging.log4j.core.Logger metricsLogger;
 
   /**
    * Constructor.
@@ -58,10 +64,16 @@ public class PlainTextReporter extends ScheduledReporter {
       TimeUnit durationUnit) {
     super(registry, name, MetricFilter.ALL, rateUnit, durationUnit);
 
-    metricsLogger = Logger.getLogger("com.oxygenxml.metrics");
-    ConsoleAppender appender = new ConsoleAppender(new NoFormatLayout());
+    metricsLogger = LoggerContext.getContext(false).getLogger("com.oxygenxml.metrics");
+    Layout<? extends Serializable> layout = PatternLayout
+        .newBuilder()
+        .build();
+    ConsoleAppender appender = ConsoleAppender
+        .newBuilder()
+        .setLayout(layout)
+        .build();
     metricsLogger.addAppender(appender);
-    metricsLogger.setAdditivity(false);
+    metricsLogger.setAdditive(false);
     
     // If no special log level was set for this logger, log all events.
     if (metricsLogger.getLevel() == null) {

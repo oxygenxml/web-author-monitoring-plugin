@@ -19,7 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import javax.ws.rs.Path;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.codahale.metrics.Clock;
 import com.codahale.metrics.ExponentiallyDecayingReservoir;
@@ -45,7 +46,7 @@ public class MonitoringFilter implements Filter, PluginExtension {
   /**
    * Logger for logging.
    */
-  private static final Logger logger = Logger.getLogger(MonitoringFilter.class.getName());
+  private static final Logger logger = LogManager.getLogger(MonitoringFilter.class.getName());
 
   /**
    * Label used for edit requests.

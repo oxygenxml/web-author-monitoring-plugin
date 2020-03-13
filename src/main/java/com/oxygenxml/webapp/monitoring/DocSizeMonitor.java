@@ -1,6 +1,7 @@
 package com.oxygenxml.webapp.monitoring;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import ro.sync.ecss.extensions.api.node.AuthorDocument;
 import ro.sync.ecss.extensions.api.webapp.AuthorDocumentModel;
@@ -18,7 +19,7 @@ public class DocSizeMonitor implements WorkspaceAccessPluginExtension {
   /**
    * Logger for logging.
    */
-  private static final Logger logger = Logger.getLogger(DocSizeMonitor.class.getName());
+  private static final Logger logger = LogManager.getLogger(DocSizeMonitor.class.getName());
 
   /**
    * Threshold for large documents size.
