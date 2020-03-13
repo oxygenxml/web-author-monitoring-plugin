@@ -432,7 +432,7 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </component>
-    <component id="joda-time:joda-time:2.9.1" draft="false" product="webapp">
+    <component id="joda-time:joda-time:2.9.4" draft="false" product="webapp">
         <name>Joda-Time</name>
         <version>2.9.1</version>
         <project-info>
