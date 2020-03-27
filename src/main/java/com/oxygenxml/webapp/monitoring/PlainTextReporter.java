@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.builders.layout.PatternLayoutBuilder;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -71,14 +70,11 @@ public class PlainTextReporter extends ScheduledReporter {
     ConsoleAppender appender = ConsoleAppender
         .newBuilder()
         .setLayout(layout)
+        .setName("Console")
         .build();
     metricsLogger.addAppender(appender);
     metricsLogger.setAdditive(false);
-    
-    // If no special log level was set for this logger, log all events.
-    if (metricsLogger.getLevel() == null) {
-      metricsLogger.setLevel(Level.ALL);
-    }
+    metricsLogger.setLevel(Level.ALL);
 
     this.mapper = new ObjectMapper().registerModule(
         new MetricsModule(rateUnit, durationUnit, false));
