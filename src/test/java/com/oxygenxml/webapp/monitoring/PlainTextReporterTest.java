@@ -9,7 +9,9 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -20,17 +22,32 @@ import ro.sync.basic.util.StringUtil;
 
 public class PlainTextReporterTest {
 
-  private PrintStream originalOut;
+  private static PrintStream originalOut;
+  private static ByteArrayOutputStream out;
 
+  @BeforeClass
+  public static void recordOut() {
+    originalOut = System.out;
+
+    out = new ByteArrayOutputStream();
+    PrintStream mockPrintStream = new PrintStream(out) {
+      @Override
+      public void write(byte[] buf, int off, int len) {
+        super.write(buf, off, len);
+        originalOut.write(buf, off, len);
+      }
+    };
+    System.setOut(mockPrintStream);
+  }
+  
+  @AfterClass
+  public static void tearDown() {
+    System.setOut(originalOut);
+  }
   @Before
-  public void recordOut() {
-    this.originalOut = System.out;
+  public void before() {
+    out.reset();
   }
-  
-  public void tearDown() {
-    System.setOut(this.originalOut);
-  }
-  
   /**
    * <p><b>Description:</b> Test that instantiation works.</p>
    * <p><b>Bug ID:</b> WA-3775</p>
@@ -41,10 +58,6 @@ public class PlainTextReporterTest {
    */
   @Test
   public void testInstantiation() throws Exception {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    PrintStream mockPrintStream = new PrintStream(out);
-    System.setOut(mockPrintStream);
-    
     MetricRegistry registry = Mockito.mock(MetricRegistry.class);
     PlainTextReporter reporter = new PlainTextReporter(registry, "Reporter", TimeUnit.SECONDS, TimeUnit.SECONDS);
     reporter.report();
@@ -63,11 +76,7 @@ public class PlainTextReporterTest {
    * @author bogdan_dumitru
    */
   @Test
-  public void configurationPersitsAfterPrivilegedPropertyConfiguratorInitializeLoggers() {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    PrintStream mockPrintStream = new PrintStream(out);
-    System.setOut(mockPrintStream);
-
+  public void testInstantiationBeforeConfigLog4j() {
     MetricRegistry registry = Mockito.mock(MetricRegistry.class);
     PlainTextReporter reporter = new PlainTextReporter(registry, "Reporter", TimeUnit.SECONDS, TimeUnit.SECONDS);
     reporter.report();
