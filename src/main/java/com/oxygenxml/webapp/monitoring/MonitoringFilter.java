@@ -149,7 +149,7 @@ public class MonitoringFilter implements Filter, PluginExtension {
    * @param request The request.
    * @param durationNanoSeconds The duration.
    */
-  private void logLargeDuration(ServletRequest request, long durationNanoSeconds) {
+  void logLargeDuration(ServletRequest request, long durationNanoSeconds) {
     if (durationNanoSeconds > 100 * 1000L * 1000L && request instanceof HttpServletRequest) {
       HttpServletRequest httpServletRequest = (HttpServletRequest)request;
       String url = httpServletRequest.getRequestURL().toString();

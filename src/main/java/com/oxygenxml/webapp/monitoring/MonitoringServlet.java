@@ -47,12 +47,27 @@ public class MonitoringServlet extends WebappServletPluginExtension {
    * Unerlying servlet to which we delegate for metrics serialization as JSON.
    */
   private MetricsServlet metricsServlet;
+
+  /**
+   * The interval between metrics logs.
+   */
+  private int intervalSize;
+  /**
+   * The interval between metrics logs.
+   */
+  private TimeUnit intervalUnit;
   
   /**
    * Constructor.
    */
   public MonitoringServlet() {
-    threadDumpServlet = new ThreadDumpServlet();
+    this(1, TimeUnit.MINUTES);
+  }
+
+  MonitoringServlet(int intervalSize, TimeUnit intervalUnit) {
+    this.threadDumpServlet = new ThreadDumpServlet();
+    this.intervalSize = intervalSize;
+    this.intervalUnit = intervalUnit;
   }
 
   @Override
@@ -86,7 +101,7 @@ public class MonitoringServlet extends WebappServletPluginExtension {
     if (reporter == null) {
       reporter = this.getLog4jReporter(registry);
     }
-    reporter.start(1, TimeUnit.MINUTES);
+    reporter.start(intervalSize, intervalUnit);
   }
   
   @Override
