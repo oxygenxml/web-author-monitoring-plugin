@@ -69,6 +69,8 @@ public class PlainTextReporter extends ScheduledReporter {
     loggerContext.addPropertyChangeListener(new PropertyChangeListener() {
       @Override
       public void propertyChange(PropertyChangeEvent evt) {
+        // TODO(WA-3853)
+        System.out.println("Logger configuration changes " + evt);
         if ("config".equals(evt.getPropertyName())) {
           configureLogger(metricsLogger);
         }
@@ -116,6 +118,10 @@ public class PlainTextReporter extends ScheduledReporter {
     try {
       String metricsJson = AccessController.doPrivileged(
           (PrivilegedExceptionAction<String>) () -> mapper.writer().writeValueAsString(metrics));
+      // TODO(WA-3853)
+      System.out.println("sysout report: " + metricsJson + '\n');
+      new Exception("sysout report: " + metricsJson + '\n').printStackTrace(System.out);
+
       metricsLogger.info(metricsJson + '\n');
     } catch (Exception e) {
       logger.error(e, e);
