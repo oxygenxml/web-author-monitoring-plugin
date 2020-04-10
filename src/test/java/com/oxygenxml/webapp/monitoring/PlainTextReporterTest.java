@@ -63,7 +63,7 @@ public class PlainTextReporterTest {
     reporter.report();
     reporter.close();
     String log = new String(out.toByteArray(), StandardCharsets.US_ASCII);
-    assertTrue(log.contains("timestamp"));
+    assertTrue(log, log.contains("timestamp"));
   }
   
 
