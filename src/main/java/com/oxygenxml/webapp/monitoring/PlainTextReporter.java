@@ -1,7 +1,5 @@
 package com.oxygenxml.webapp.monitoring;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
@@ -17,6 +15,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.config.AppenderRef;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import com.codahale.metrics.Counter;
@@ -45,12 +46,17 @@ public class PlainTextReporter extends ScheduledReporter {
    * The JSON object mapper.
    */
   private final ObjectMapper mapper;
+  
+  /**
+   * Logging category to use for metrics.
+   */
+  private static final String METRICS_LOGGER_CATEGORY = "com.oxygenxml.metrics";
 
   /**
    * Logger used to write metrics.
    */
-  private final org.apache.logging.log4j.core.Logger metricsLogger;
-
+  private final Logger metricsLogger = LogManager.getLogger(METRICS_LOGGER_CATEGORY);
+  
   /**
    * Constructor.
    * 
@@ -66,35 +72,30 @@ public class PlainTextReporter extends ScheduledReporter {
     super(registry, name, MetricFilter.ALL, rateUnit, durationUnit);
 
     LoggerContext loggerContext = LoggerContext.getContext(false);
-    loggerContext.addPropertyChangeListener(new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        // TODO(WA-3853)
-        System.out.println("Logger configuration changes " + evt);
-        if ("config".equals(evt.getPropertyName())) {
-          configureLogger(metricsLogger);
-        }
-      }
-    });
-    metricsLogger = loggerContext.getLogger("com.oxygenxml.metrics");
-    configureLogger(metricsLogger);
+    configureLogger(loggerContext);
 
     this.mapper = new ObjectMapper().registerModule(
         new MetricsModule(rateUnit, durationUnit, false));
   }
 
-  private void configureLogger(org.apache.logging.log4j.core.Logger loggerImpl) {
-    Layout<? extends Serializable> layout = PatternLayout
-        .newBuilder()
-        .build();
-    ConsoleAppender appender = ConsoleAppender
-        .newBuilder()
-        .setLayout(layout)
-        .setName("Console")
-        .build();
-    loggerImpl.addAppender(appender);
-    loggerImpl.setAdditive(false);
-    loggerImpl.setLevel(Level.ALL);
+  private void configureLogger(LoggerContext ctx) {
+    final Configuration config = ctx.getConfiguration();
+    
+    Layout<? extends Serializable> layout = PatternLayout.createDefaultLayout();
+    
+    ConsoleAppender appender = ConsoleAppender.createDefaultAppenderForLayout(layout);
+    appender.start();
+    config.addAppender(appender);
+    
+    AppenderRef ref = AppenderRef.createAppenderRef("MetricsConsoleAppender", null, null);
+    AppenderRef[] refs = new AppenderRef[] {ref};
+
+    LoggerConfig loggerConfig = LoggerConfig.createLogger(false, Level.ALL, 
+        METRICS_LOGGER_CATEGORY, "true", refs, null, config, null);
+    
+    loggerConfig.addAppender(appender, null, null);
+    config.addLogger(METRICS_LOGGER_CATEGORY, loggerConfig);
+    ctx.updateLoggers();
   }
 
   /**
@@ -118,11 +119,7 @@ public class PlainTextReporter extends ScheduledReporter {
     try {
       String metricsJson = AccessController.doPrivileged(
           (PrivilegedExceptionAction<String>) () -> mapper.writer().writeValueAsString(metrics));
-      // TODO(WA-3853)
-      System.out.println("sysout report: " + metricsJson + '\n');
-      new Exception("sysout report: " + metricsJson + '\n').printStackTrace(System.out);
-
-      metricsLogger.info(metricsJson + '\n');
+      metricsLogger.info(metricsJson);
     } catch (Exception e) {
       logger.error(e, e);
     }
