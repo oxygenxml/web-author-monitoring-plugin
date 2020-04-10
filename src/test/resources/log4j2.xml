@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--xmlns="https://www.w3schools.com"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="https://raw.githubusercontent.com/apache/logging-log4j2/master/log4j-core/src/main/resources/Log4j-config.xsd"-->
+<Configuration>
+  <Appenders>
+    <ConsoleAppender name="R" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d %r %p [ %t ] %c %L - %m%n"/>
+    </ConsoleAppender>
+  </Appenders>
+
+  <Loggers>
+    <Logger name="ro.sync.jstest" level="debug"/>
+    <Logger name="ro.sync.servlet.RESTAssetLoader" level="debug"/>
+    <Logger name="ro.sync.servlet.validation" level="debug"/>
+    <Logger name="ro.sync.org.apache.http.impl.execchain.RetryExec" level="debug"/>
+    <Logger name="ro.sync.jstest.pages.WebappLoader" level="debug"/>
+
+    <Root level="debug">
+      <AppenderRef ref="R"/>
+    </Root>
+  </Loggers>
+</Configuration>

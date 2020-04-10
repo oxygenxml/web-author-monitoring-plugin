@@ -50,6 +50,12 @@
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>com.oxygenxml</groupId>
+      <artifactId>web-author-privilegedlogs</artifactId>
+      <version>22.1-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

@@ -1,5 +1,7 @@
 package com.oxygenxml.webapp.monitoring;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
@@ -63,7 +65,23 @@ public class PlainTextReporter extends ScheduledReporter {
       TimeUnit durationUnit) {
     super(registry, name, MetricFilter.ALL, rateUnit, durationUnit);
 
-    metricsLogger = LoggerContext.getContext(false).getLogger("com.oxygenxml.metrics");
+    LoggerContext loggerContext = LoggerContext.getContext(false);
+    loggerContext.addPropertyChangeListener(new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        if ("config".equals(evt.getPropertyName())) {
+          configureLogger(metricsLogger);
+        }
+      }
+    });
+    metricsLogger = loggerContext.getLogger("com.oxygenxml.metrics");
+    configureLogger(metricsLogger);
+
+    this.mapper = new ObjectMapper().registerModule(
+        new MetricsModule(rateUnit, durationUnit, false));
+  }
+
+  private void configureLogger(org.apache.logging.log4j.core.Logger loggerImpl) {
     Layout<? extends Serializable> layout = PatternLayout
         .newBuilder()
         .build();
@@ -72,12 +90,9 @@ public class PlainTextReporter extends ScheduledReporter {
         .setLayout(layout)
         .setName("Console")
         .build();
-    metricsLogger.addAppender(appender);
-    metricsLogger.setAdditive(false);
-    metricsLogger.setLevel(Level.ALL);
-
-    this.mapper = new ObjectMapper().registerModule(
-        new MetricsModule(rateUnit, durationUnit, false));
+    loggerImpl.addAppender(appender);
+    loggerImpl.setAdditive(false);
+    loggerImpl.setLevel(Level.ALL);
   }
 
   /**
