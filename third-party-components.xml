@@ -216,9 +216,9 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
         </license>
     </component>
-    <component id="com.fasterxml.jackson.core:jackson-databind:2.9.10.1" draft="false" product="webapp">
+    <component id="com.fasterxml.jackson.core:jackson-databind:2.9.10.3" draft="false" product="webapp">
         <name>jackson-databind</name>
-        <version>2.9.10.1</version>
+        <version>2.9.10.3</version>
         <project-info>
             <about>General data-binding functionality for Jackson: works on core streaming API</about>
             <licensor>FasterXML</licensor>
@@ -2686,9 +2686,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
             <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
         </license>
     </component>
-    <component id="com.fasterxml.jackson.core:jackson-annotations:2.9.0" draft="false" product="webapp">
+    <component id="com.fasterxml.jackson.core:jackson-annotations:2.9.10" draft="false" product="webapp">
         <name>Jackson-annotations</name>
-        <version>2.9.0</version>
+        <version>2.9.10</version>
         <project-info>
             <about>Core annotations used for value types, used by Jackson data binding package.</about>
             <licensor>FasterXML</licensor>
