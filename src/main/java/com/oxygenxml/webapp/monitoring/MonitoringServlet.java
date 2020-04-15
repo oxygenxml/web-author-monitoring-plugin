@@ -61,7 +61,7 @@ public class MonitoringServlet extends WebappServletPluginExtension {
    * Constructor.
    */
   public MonitoringServlet() {
-    this(5, TimeUnit.SECONDS);
+    this(1, TimeUnit.MINUTES);
   }
 
   MonitoringServlet(int intervalSize, TimeUnit intervalUnit) {
