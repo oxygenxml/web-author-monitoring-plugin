@@ -40,23 +40,24 @@ public class PlainTextReporter extends ScheduledReporter {
   /**
    * Logger for logging.
    */
-  private static final Logger logger = LogManager.getLogger(MonitoringServlet.class.getName());
+  private static final Logger logger = LogManager.getLogger(PlainTextReporter.class);
+
+  
+  /**
+   * Logger used to write metrics.
+   */
+  private static final Logger metricsLogger = LogManager.getLogger(PlainTextReporter.class);
+
+  /**
+   * The custom appender name.
+   */
+  private static final String CUSTOM_APPENDER_NAME = "MetricsAppender";
 
   /**
    * The JSON object mapper.
    */
   private final ObjectMapper mapper;
-  
-  /**
-   * Logging category to use for metrics.
-   */
-  private static final String METRICS_LOGGER_CATEGORY = "com.oxygenxml.metrics";
 
-  /**
-   * Logger used to write metrics.
-   */
-  private final Logger metricsLogger = LogManager.getLogger(METRICS_LOGGER_CATEGORY);
-  
   /**
    * Constructor.
    * 
@@ -71,30 +72,45 @@ public class PlainTextReporter extends ScheduledReporter {
       TimeUnit durationUnit) {
     super(registry, name, MetricFilter.ALL, rateUnit, durationUnit);
 
-    LoggerContext loggerContext = LoggerContext.getContext(false);
-    configureLogger(loggerContext);
+    if (!wasExplicitlyConfigured(metricsLogger)) {
+      configureLogger(metricsLogger);
+    }
 
     this.mapper = new ObjectMapper().registerModule(
         new MetricsModule(rateUnit, durationUnit, false));
   }
+  /**
+   * Check if the given logger have an appender with {@link CUSTOM_APPENDER_NAME} name.
+   * @param aLogger The logger to check.
+   * @return <code>true</code> if the given logger have an appender with {@link CUSTOM_APPENDER_NAME} name.
+   */
+  private static boolean wasExplicitlyConfigured(Logger aLogger) {
+    org.apache.logging.log4j.core.Logger loggerImpl = LoggerContext.getContext(false).getLogger(aLogger.getName());
+    return loggerImpl.getAppenders().containsKey(CUSTOM_APPENDER_NAME)
+        || (loggerImpl.isAdditive() && loggerImpl.getParent().getAppenders().containsKey(CUSTOM_APPENDER_NAME));
+  }
 
-  private void configureLogger(LoggerContext ctx) {
+  /**
+   * Configure the given logger to have a simple layout.
+   * @param aLogger The logger to configure.
+   */
+  private static void configureLogger(Logger aLogger) {
+    LoggerContext ctx = LoggerContext.getContext(false);
     final Configuration config = ctx.getConfiguration();
     
     Layout<? extends Serializable> layout = PatternLayout.createDefaultLayout();
-    
     ConsoleAppender appender = ConsoleAppender.createDefaultAppenderForLayout(layout);
     appender.start();
     config.addAppender(appender);
-    
-    AppenderRef ref = AppenderRef.createAppenderRef("MetricsConsoleAppender", null, null);
+    AppenderRef ref = AppenderRef.createAppenderRef(CUSTOM_APPENDER_NAME, null, null);
     AppenderRef[] refs = new AppenderRef[] {ref};
 
     LoggerConfig loggerConfig = LoggerConfig.createLogger(false, Level.ALL, 
-        METRICS_LOGGER_CATEGORY, "true", refs, null, config, null);
+        aLogger.getName(), "true", refs, null, config, null);
     
     loggerConfig.addAppender(appender, null, null);
-    config.addLogger(METRICS_LOGGER_CATEGORY, loggerConfig);
+    config.removeLogger(aLogger.getName());
+    config.addLogger(aLogger.getName(), loggerConfig);
     ctx.updateLoggers();
   }
 

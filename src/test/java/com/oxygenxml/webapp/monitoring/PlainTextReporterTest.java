@@ -57,7 +57,7 @@ public class PlainTextReporterTest {
    * @throws Exception
    */
   @Test
-  public void testInstantiation() throws Exception {
+  public void testInstantiati1on() throws Exception {
     MetricRegistry registry = Mockito.mock(MetricRegistry.class);
     PlainTextReporter reporter = new PlainTextReporter(registry, "Reporter", TimeUnit.SECONDS, TimeUnit.SECONDS);
     reporter.report();
@@ -65,33 +65,21 @@ public class PlainTextReporterTest {
     String log = new String(out.toByteArray(), StandardCharsets.US_ASCII);
     assertTrue(log, log.contains("timestamp"));
   }
-  
-
   /**
-   * <p><b>Description:</b> Asserts that the custom logger persists after
-   * {@code PrivilegedPropertyConfigurator.configure()} is called. 
-   * .</p>
+   * <p><b>Description:</b> Test that instantiation works.</p>
    * <p><b>Bug ID:</b> WA-3775</p>
    *
-   * @author bogdan_dumitru
+   * @author cristi_talau
+   *
+   * @throws Exception
    */
   @Test
-  public void testInstantiationBeforeConfigLog4j() {
+  public void testInstantiation() throws Exception {
     MetricRegistry registry = Mockito.mock(MetricRegistry.class);
     PlainTextReporter reporter = new PlainTextReporter(registry, "Reporter", TimeUnit.SECONDS, TimeUnit.SECONDS);
     reporter.report();
+    reporter.close();
     String log = new String(out.toByteArray(), StandardCharsets.US_ASCII);
     assertTrue(log, log.contains("timestamp"));
-
-    // Configure log4j2.
-    ClassLoader cl = this.getClass().getClassLoader();
-    String logFile = new File("target/ignored.log.file.log").getAbsolutePath();
-    File optLog4jConfigurationFile = new File("src/test/resources/log4j2.xml");
-    PrivilegedPropertyConfigurator.configure(cl, logFile , optLog4jConfigurationFile);
-
-    reporter.report();
-    log = new String(out.toByteArray(), StandardCharsets.US_ASCII);
-    assertEquals(2, StringUtil.countMatches(log, "timestamp"));
-    reporter.close();
   }
 }

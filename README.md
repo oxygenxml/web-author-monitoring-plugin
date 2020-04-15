@@ -36,6 +36,12 @@ You have to set the following environment variables:
 
 By extending this plugin you can send the collected metrics also to other metrics servers.
 
+
+Custom configuration
+-----------------
+The default configuration can be overridden from log4j2.xml by declaring an appender with "MetricsAppender" name for the "com.oxygenxml.webapp.monitoring" package.
+
+
 Copyright and License
 ---------------------
 Copyright 2018 Syncro Soft SRL.
