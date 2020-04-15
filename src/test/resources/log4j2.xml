@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--xmlns="https://www.w3schools.com"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="https://raw.githubusercontent.com/apache/logging-log4j2/master/log4j-core/src/main/resources/Log4j-config.xsd"-->
 <Configuration>
   <Appenders>
-    <ConsoleAppender name="R" target="SYSTEM_OUT">
+    <Console name="R" target="SYSTEM_OUT">
       <PatternLayout pattern="%d %r %p [ %t ] %c %L - %m%n"/>
-    </ConsoleAppender>
+    </Console>
   </Appenders>
 
   <Loggers>

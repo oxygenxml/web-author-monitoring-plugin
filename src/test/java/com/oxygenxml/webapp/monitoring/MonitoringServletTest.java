@@ -6,16 +6,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,7 +21,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.codahale.metrics.MetricRegistry;
 
@@ -32,10 +28,16 @@ import ro.sync.basic.util.StringUtil;
 import ro.sync.ecss.extensions.api.webapp.access.WebappPluginWorkspace;
 import ro.sync.exml.workspace.api.PluginWorkspaceProvider;
 
+/**
+ * Tests for {@link MonitoringServlet}.
+ */
 public class MonitoringServletTest {
   private static PrintStream originalOut;
   private static ByteArrayOutputStream out;
 
+  /**
+   * Before class.
+   */
   @BeforeClass
   public static void recordOut() {
     originalOut = System.out;
@@ -50,37 +52,39 @@ public class MonitoringServletTest {
     System.setOut(mockPrintStream);
   }
 
+  /**
+   * After class.
+   */
   @AfterClass
   public static void tearDown() {
     System.setOut(originalOut);
   }
+  /**
+   * Before each.
+   */
   @Before
   public void before() {
     out.reset();
   }
 
   /**
-   * Assert that metrics are logger after a long request.
-   * 
-   */
-  /**
-   * <p><b>Description:</b> Test that the requests are counted correctly.</p>
+   * <p><b>Description:</b>Assert that metrics are logger after a long request.</p>
    * <p><b>Bug ID:</b> WA-3853</p>
    *
    * @author bogdan_dumitru
    *
-   * @throws ServletException
-   * @throws InterruptedException
-   * @throws IOException
+   * @throws Exception If it fails.
    */
   @Test
-  public void testLogMetricsAfterLongRequest() throws ServletException, InterruptedException, IOException {
+  public void testLogMetricsAfterLongRequest() throws Exception {
+//    System.out.println(ConsoleAppender.class.getProtectionDomain().getCodeSource().getLocation());
+    
     PluginWorkspaceProvider.setPluginWorkspace(mock(WebappPluginWorkspace.class));
-    ServletConfig servletConfig = Mockito.mock(ServletConfig.class);
+    ServletConfig servletConfig = mock(ServletConfig.class);
     ServletContext context = mock(ServletContext.class);
+    MetricRegistry registry = new MetricRegistry();
 
     when(servletConfig.getServletContext()).thenReturn(context);
-    MetricRegistry registry = new MetricRegistry();
     when(context.getAttribute(eq(MonitoringServlet.METRICS_REGISTRY_ATTR_NAME))).thenReturn(registry);
 
     MonitoringServlet servlet = new MonitoringServlet(100, TimeUnit.MILLISECONDS) {
@@ -89,14 +93,13 @@ public class MonitoringServletTest {
         return servletConfig;
       }
     };
-
     MonitoringFilter filter = new MonitoringFilter() {
       @Override
       void logLargeDuration(ServletRequest request, long durationNanoSeconds) {
         super.logLargeDuration(request, Long.MAX_VALUE);
       }
     };
-    FilterConfig filterConfig = Mockito.mock(FilterConfig.class);
+    FilterConfig filterConfig = mock(FilterConfig.class);
     when(filterConfig.getServletContext()).thenReturn(context);
     filter.init(filterConfig);
     servlet.init();
