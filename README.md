@@ -39,7 +39,21 @@ By extending this plugin you can send the collected metrics also to other metric
 
 Custom configuration
 -----------------
-The default configuration can be overridden from log4j2.xml by declaring an appender with "MetricsAppender" name for the "com.oxygenxml.webapp.monitoring" package.
+The default configuration can be overridden from log4j2.xml by declaring an appender with "MetricsAppender" name for the "com.oxygenxml.webapp.monitoring" package like:
+  <Appenders>
+    <PrivilegedRollingFileAppender name="MetricsAppender" fileName="${sys:custom-file}" filePattern="${sys:custom-file}.%i">
+        <PatternLayout pattern="%r %p [ %t ] %c - %m%n"/>
+        <Policies>
+           <SizeBasedTriggeringPolicy size="12000KB" />
+        </Policies>
+        <DefaultRolloverStrategy max="4" compressionLevel="0"/>
+    </PrivilegedRollingFileAppender>
+  </Appenders>
+  <Loggers>
+    <Logger name="com.oxygenxml.webapp.monitoring" level="DEBUG" additivity="true">
+      <AppenderRef ref="MetricsAppender"/>
+    </Logger>
+  </Loggers>
 
 
 Copyright and License
