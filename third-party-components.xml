@@ -216,7 +216,7 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
         </license>
     </component>
-    <component id="com.fasterxml.jackson.core:jackson-databind:2.9.10.3" draft="false" product="webapp">
+    <component id="com.fasterxml.jackson.core:jackson-databind:2.9.10.4" draft="false" product="webapp">
         <name>jackson-databind</name>
         <version>2.9.10.3</version>
         <project-info>
