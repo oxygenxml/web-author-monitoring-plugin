@@ -218,7 +218,7 @@
     </component>
     <component id="com.fasterxml.jackson.core:jackson-databind:2.9.10.4" draft="false" product="webapp">
         <name>jackson-databind</name>
-        <version>2.9.9.3</version>
+        <version>2.9.10.4</version>
         <project-info>
             <about>General data-binding functionality for Jackson: works on core streaming API</about>
             <licensor>FasterXML</licensor>
