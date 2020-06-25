@@ -6,8 +6,8 @@
     class="ro.sync.exml.plugin.Plugin"
     id="webapp-monitoring-plugin"
     name="Monitoring Interface"
-    description="A plugin for oXygen XML Web Author that provides monitoring hooks."
-    version="19.0-SNAPSHOT"
+    description="A plugin for Oxygen XML Web Author that provides monitoring hooks."
+    version="${parsedVersion.majorVersion}.${parsedVersion.minorVersion}"
     vendor="SyncRo Soft SRL">
 
   <runtime>
