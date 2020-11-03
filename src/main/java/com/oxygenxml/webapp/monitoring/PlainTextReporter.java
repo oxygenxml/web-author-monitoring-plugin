@@ -1,7 +1,6 @@
 package com.oxygenxml.webapp.monitoring;
 
 import java.io.Serializable;
-import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +29,8 @@ import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.json.MetricsModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ro.sync.security.Sandbox;
 
 /**
  * Reporter that writes log messages in the "com.oxygenxml.metrics" logger on the INFO level.
@@ -133,8 +134,10 @@ public class PlainTextReporter extends ScheduledReporter {
     metrics.put("timestamp", System.currentTimeMillis());
     
     try {
-      String metricsJson = AccessController.doPrivileged(
-          (PrivilegedExceptionAction<String>) () -> mapper.writer().writeValueAsString(metrics));
+      // Metrics serialization requires full privileges since it queries the thread state
+      // of the VM.
+      String metricsJson = Sandbox.runWithAllPerms((PrivilegedExceptionAction<String>) // NOSONAR 
+          () -> mapper.writer().writeValueAsString(metrics));
       metricsLogger.info(metricsJson);
     } catch (Exception e) {
       logger.error(e, e);
