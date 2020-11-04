@@ -1,6 +1,8 @@
 package com.oxygenxml.webapp.monitoring;
 
 import java.io.Serializable;
+import java.security.AccessControlException;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
@@ -126,7 +128,7 @@ public class PlainTextReporter extends ScheduledReporter {
       SortedMap<String, Timer> timers) {
 
     Map<String, Object> metrics = new HashMap<>();
-    addMetrics(gauges, metrics);
+    addGaugeMetricsWithAllPermissions(gauges, metrics);
     addMetrics(counters, metrics);
     addMetrics(histograms, metrics);
     addMetrics(meters, metrics);
@@ -152,6 +154,30 @@ public class PlainTextReporter extends ScheduledReporter {
   private <T> void addMetrics(Map<String, T> metrics, Map<String, Object> allMetrics) {
     for (Entry<String, T> entry : metrics.entrySet()) {
       allMetrics.put(entry.getKey().replace('.', '-'), entry.getValue());
+    }
+  }
+  
+  /**
+   * Add some metrics to the final map, rewriting the keys to be AWS CloudWatch friendly.
+   * @param metrics The metrics to add.
+   * @param allMetrics The map where to put the values.
+   */
+  private void addGaugeMetricsWithAllPermissions(@SuppressWarnings("rawtypes") Map<String, Gauge> metrics, 
+      Map<String, Object> allMetrics) {
+    Sandbox.runWithAllPerms((PrivilegedAction<String>) // NOSONAR 
+      () -> {
+        metrics.forEach((name, gauge) ->
+          addGaugeValue(name, gauge, allMetrics));
+        return "";
+      });
+  }
+  
+  private void addGaugeValue(String name, @SuppressWarnings("rawtypes") Gauge gauge, 
+      Map<String, Object> allMetrics) {
+    try {
+      allMetrics.put(name, gauge.getValue());
+    } catch (AccessControlException e) {
+      logger.error("Error serializing metric: {}", name, e);
     }
   }
 }
