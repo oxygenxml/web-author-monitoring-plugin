@@ -30,6 +30,7 @@ import com.codahale.metrics.Timer;
 
 import ro.sync.ecss.extensions.api.webapp.access.WebappPluginWorkspace;
 import ro.sync.exml.workspace.api.PluginWorkspaceProvider;
+import ro.sync.servlet.monitoring.ActiveWebSocketsGauge;
 
 /**
  * Tests for the monitoring filter.
@@ -60,6 +61,7 @@ public class MonitoringFilterTest {
     registry = new MetricRegistry();
     ServletContext context = Mockito.mock(ServletContext.class);
     Mockito.when(context.getAttribute(MonitoringServlet.METRICS_REGISTRY_ATTR_NAME)).thenReturn(registry);
+    Mockito.when(context.getAttribute(ActiveWebSocketsGauge.class.getName())).thenReturn(new ActiveWebSocketsGauge());
     FilterConfig filterConfig = Mockito.mock(FilterConfig.class);
     Mockito.when(filterConfig.getServletContext()).thenReturn(context );
 
