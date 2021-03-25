@@ -73,6 +73,10 @@ public class MonitoringServlet extends WebappServletPluginExtension {
   @Override
   public void init() throws ServletException {
     ServletContext servletContext = getServletConfig().getServletContext();
+    
+    MonitoringLifecycleHandler.getInstance()
+    .ensureInitialized(servletContext);
+    
     MetricRegistry registry = (MetricRegistry) servletContext.getAttribute(METRICS_REGISTRY_ATTR_NAME);
     
     initReporter(registry);
