@@ -10,6 +10,7 @@ import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -33,6 +34,7 @@ import com.google.common.annotations.VisibleForTesting;
 import ro.sync.exml.plugin.PluginExtension;
 import ro.sync.servlet.RESTDocumentControllers;
 import ro.sync.servlet.RESTDocumentManager;
+import ro.sync.servlet.monitoring.MonitoringManager;
 
 /**
  * Custom filter that monitors the frequency of error occurrences and the
@@ -62,6 +64,9 @@ public class MonitoringFilter implements Filter, PluginExtension {
    */
   private static final String OTHERS_LABEL = "others";
   
+
+
+
   /**
    * REST path of the edit actions.
    */
@@ -92,6 +97,11 @@ public class MonitoringFilter implements Filter, PluginExtension {
   private Clock clock = Clock.defaultClock();
 
   /**
+   * The monitoring manager.
+   */
+  private MonitoringManager monitoringManager;
+
+  /**
    * The servlet context.
    */
   private ServletContext servletContext;
@@ -99,10 +109,8 @@ public class MonitoringFilter implements Filter, PluginExtension {
   @Override
   public void init(FilterConfig filterConfig) throws ServletException {
     servletContext = filterConfig.getServletContext();
-    
-    MonitoringLifecycleHandler.getInstance()
-      .ensureInitialized(servletContext);
-    
+    monitoringManager = new MonitoringManager();
+    monitoringManager.contextInitialized(new ServletContextEvent(servletContext));
     registry = (MetricRegistry) filterConfig.getServletContext().getAttribute(MonitoringServlet.METRICS_REGISTRY_ATTR_NAME);
     
     durations = new ConcurrentHashMap<>();
@@ -270,15 +278,18 @@ public class MonitoringFilter implements Filter, PluginExtension {
    * @return The Timer corresponding to the label.
    */
   private Timer getDurationTimer(String label) {
-    return durations.computeIfAbsent(label, (key) -> {
-      return registry.register("duration." + key, 
+    Timer duration = durations.get(label);
+    if (duration == null) {
+      duration = registry.register("duration." + label, 
           new Timer(new ExponentiallyDecayingReservoir(), clock));
-    });
+      durations.put(label, duration);
+    }
+    return duration;
   }
 
   @Override
   public void destroy() {
-    MonitoringLifecycleHandler.getInstance().destroy(servletContext);
+    monitoringManager.contextDestroyed(new ServletContextEvent(servletContext));
   }
   
   /**
