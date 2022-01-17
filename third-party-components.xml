@@ -2234,9 +2234,9 @@ NOTE: The text of this Exhibit A may differ slightly from the text of the notice
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </component>
-    <component id="org.slf4j:slf4j-api:1.7.26" draft="false" product="webapp">
+    <component id="org.slf4j:slf4j-api:1.7.32" draft="false" product="webapp">
         <name>SLF4J API Module</name>
-        <version>1.7.26</version>
+        <version>1.7.32</version>
         <project-info>
             <about>The slf4j API</about>
             <licensor>QOS.ch</licensor>
