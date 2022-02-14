@@ -52,13 +52,19 @@
         <artifactId>metrics-graphite</artifactId>
         <version>${metrics.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>com.oxygenxml</groupId>
       <artifactId>oxygen-webapp</artifactId>
       <classifier>classes</classifier>
       <version>${project.version}</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-slf4j-impl</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
