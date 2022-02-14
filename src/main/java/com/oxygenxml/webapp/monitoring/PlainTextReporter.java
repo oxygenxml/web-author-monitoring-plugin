@@ -1,6 +1,5 @@
 package com.oxygenxml.webapp.monitoring;
 
-import java.io.Serializable;
 import java.security.AccessControlException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
@@ -10,16 +9,8 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.Layout;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.ConsoleAppender;
-import org.apache.logging.log4j.core.config.AppenderRef;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
@@ -32,29 +23,27 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.json.MetricsModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
 import ro.sync.security.Sandbox;
 
+
 /**
- * Reporter that writes log messages in the "com.oxygenxml.metrics" logger on the INFO level.
+ * Reporter that writes log messages in the {@code NO_LAYOUT_LOGGER.METRICS} logger on the INFO level.
+ * 
+ * A logger or parent logger (NO_LAYOUT_LOGGER) and corresponding appender must be configured in WebAuthor.
+ * The pattern of the appender must be set to log the message only (i.e. {@code %m%n})
  * 
  * @author cristi_talau
  */
+@Slf4j
 public class PlainTextReporter extends ScheduledReporter {
-  /**
-   * Logger for logging.
-   */
-  private static final Logger logger = LogManager.getLogger(PlainTextReporter.class);
 
+  /**
+   * The name of the logger 
+   */
+  public static final String METRICS_LOGGER_NAME = "NO_LAYOUT_LOGGER.METRICS";
   
-  /**
-   * Logger used to write metrics.
-   */
-  private static final Logger metricsLogger = LogManager.getLogger(PlainTextReporter.class);
-
-  /**
-   * The custom appender name.
-   */
-  private static final String CUSTOM_APPENDER_NAME = "MetricsAppender";
+  private static final Logger metricsLog = LoggerFactory.getLogger(METRICS_LOGGER_NAME);
 
   /**
    * The JSON object mapper.
@@ -75,48 +64,11 @@ public class PlainTextReporter extends ScheduledReporter {
       TimeUnit durationUnit) {
     super(registry, name, MetricFilter.ALL, rateUnit, durationUnit);
 
-    if (!wasExplicitlyConfigured(metricsLogger)) {
-      configureLogger(metricsLogger);
-    }
 
     this.mapper = new ObjectMapper().registerModule(
         new MetricsModule(rateUnit, durationUnit, false));
   }
-  /**
-   * Check if the given logger have an appender with {@link CUSTOM_APPENDER_NAME} name.
-   * @param aLogger The logger to check.
-   * @return <code>true</code> if the given logger have an appender with {@link CUSTOM_APPENDER_NAME} name.
-   */
-  private static boolean wasExplicitlyConfigured(Logger aLogger) {
-    org.apache.logging.log4j.core.Logger loggerImpl = LoggerContext.getContext(false).getLogger(aLogger.getName());
-    return loggerImpl.getAppenders().containsKey(CUSTOM_APPENDER_NAME)
-        || (loggerImpl.isAdditive() && loggerImpl.getParent().getAppenders().containsKey(CUSTOM_APPENDER_NAME));
-  }
-
-  /**
-   * Configure the given logger to have a simple layout.
-   * @param aLogger The logger to configure.
-   */
-  private static void configureLogger(Logger aLogger) {
-    LoggerContext ctx = LoggerContext.getContext(false);
-    final Configuration config = ctx.getConfiguration();
-    
-    Layout<? extends Serializable> layout = PatternLayout.createDefaultLayout();
-    ConsoleAppender appender = ConsoleAppender.createDefaultAppenderForLayout(layout);
-    appender.start();
-    config.addAppender(appender);
-    AppenderRef ref = AppenderRef.createAppenderRef(CUSTOM_APPENDER_NAME, null, null);
-    AppenderRef[] refs = new AppenderRef[] {ref};
-
-    LoggerConfig loggerConfig = LoggerConfig.createLogger(false, Level.ALL, 
-        aLogger.getName(), "true", refs, null, config, null);
-    
-    loggerConfig.addAppender(appender, null, null);
-    config.removeLogger(aLogger.getName());
-    config.addLogger(aLogger.getName(), loggerConfig);
-    ctx.updateLoggers();
-  }
-
+  
   /**
    * @see {@link ScheduledReporter#report()}
    */
@@ -140,9 +92,9 @@ public class PlainTextReporter extends ScheduledReporter {
       // of the VM.
       String metricsJson = Sandbox.runWithAllPerms((PrivilegedExceptionAction<String>) // NOSONAR 
           () -> mapper.writer().writeValueAsString(metrics));
-      metricsLogger.info(metricsJson);
+      metricsLog.info(metricsJson);
     } catch (Exception e) {
-      logger.error(e, e);
+      log.error(e.getMessage(), e);
     }
   }
 
@@ -177,7 +129,7 @@ public class PlainTextReporter extends ScheduledReporter {
     try {
       allMetrics.put(name, gauge.getValue());
     } catch (AccessControlException e) {
-      logger.error("Error serializing metric: {}", name, e);
+      log.error("Error serializing metric: {}", name, e);
     }
   }
 }

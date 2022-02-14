@@ -1,8 +1,6 @@
 package com.oxygenxml.webapp.monitoring;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import lombok.extern.slf4j.Slf4j;
 import ro.sync.ecss.extensions.api.node.AuthorDocument;
 import ro.sync.ecss.extensions.api.webapp.AuthorDocumentModel;
 import ro.sync.ecss.extensions.api.webapp.access.WebappEditingSessionLifecycleListener;
@@ -15,12 +13,9 @@ import ro.sync.exml.workspace.api.standalone.StandalonePluginWorkspace;
  * 
  * @author cristi_talau
  */
+@Slf4j
 public class DocSizeMonitor implements WorkspaceAccessPluginExtension {
-  /**
-   * Logger for logging.
-   */
-  private static final Logger logger = LogManager.getLogger(DocSizeMonitor.class.getName());
-
+ 
   /**
    * Threshold for large documents size.
    */
@@ -38,7 +33,7 @@ public class DocSizeMonitor implements WorkspaceAccessPluginExtension {
       AuthorDocument documentNode = model.getAuthorDocumentController().getAuthorDocumentNode();
       int size = documentNode.getEndOffset() - documentNode.getStartOffset();
       if (size > LARGE_DOCUMENT_THRESHOLD) {
-        logger.warn("Large document: " + documentNode.getSystemID() + " - " + (size / 1000) + "KB");
+        log.warn("Large document: {} - {}KB", documentNode.getSystemID(), (size / 1000));
       }
     }
   }

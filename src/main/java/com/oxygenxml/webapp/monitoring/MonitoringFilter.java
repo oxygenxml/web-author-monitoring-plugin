@@ -19,9 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import javax.ws.rs.Path;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.codahale.metrics.Clock;
 import com.codahale.metrics.ExponentiallyDecayingReservoir;
 import com.codahale.metrics.Meter;
@@ -31,6 +28,7 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.Timer.Context;
 import com.google.common.annotations.VisibleForTesting;
 
+import lombok.extern.slf4j.Slf4j;
 import ro.sync.exml.plugin.PluginExtension;
 import ro.sync.servlet.RESTDocumentControllers;
 import ro.sync.servlet.RESTDocumentManager;
@@ -42,12 +40,9 @@ import ro.sync.servlet.monitoring.MonitoringManager;
  * 
  * @author cristi_talau
  */
+@Slf4j
 public class MonitoringFilter implements Filter, PluginExtension {
-  /**
-   * Logger for logging.
-   */
-  private static final Logger logger = LogManager.getLogger(MonitoringFilter.class.getName());
-
+ 
   /**
    * Label used for edit requests.
    */
@@ -63,9 +58,6 @@ public class MonitoringFilter implements Filter, PluginExtension {
    * Label used for all other requests.  
    */
   private static final String OTHERS_LABEL = "others";
-  
-
-
 
   /**
    * REST path of the edit actions.
@@ -156,7 +148,7 @@ public class MonitoringFilter implements Filter, PluginExtension {
       String queryString = httpServletRequest.getQueryString();
       String urlString = queryString != null ? url + "?" + queryString : url; 
       double nano = 1000. * 1000. * 1000.;
-      logger.warn("Long request: " + urlString + " - took " + (durationNanoSeconds / nano) + "seconds");
+      log.warn("Long request: " + urlString + " - took " + (durationNanoSeconds / nano) + "seconds");
     }
   }
 
