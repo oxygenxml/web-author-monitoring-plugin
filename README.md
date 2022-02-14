@@ -39,23 +39,12 @@ By extending this plugin you can send the collected metrics also to other metric
 
 Custom configuration
 -----------------
-The default configuration can be overridden from log4j2.xml by declaring an appender with "MetricsAppender" name for the "com.oxygenxml.webapp.monitoring" package like:
-```  
-  <Appenders>
-    <PrivilegedRollingFileAppender name="MetricsAppender" fileName="${sys:custom-file}" filePattern="${sys:custom-file}.%i">
-        <PatternLayout pattern="%r %p [ %t ] %c - %m%n"/>
-        <Policies>
-           <SizeBasedTriggeringPolicy size="12000KB" />
-        </Policies>
-        <DefaultRolloverStrategy max="4" compressionLevel="0"/>
-    </PrivilegedRollingFileAppender>
-  </Appenders>
-  <Loggers>
-    <Logger name="com.oxygenxml.webapp.monitoring" level="DEBUG" additivity="true">
-      <AppenderRef ref="MetricsAppender"/>
-    </Logger>
-  </Loggers>
-```
+The name of the logger used by this plugin to log the above information is ``NO_LAYOUT_LOGGER.METRICS``
+
+WebAuthor default configuration defines a logger named ``NO_LAYOUT_LOGGER``. This logger has a console appender with no layout, so 
+any child logger (with a naming scheme ``NO_LAYOUT_LOGGER.<LOGGER_NAME>``) will log only the messages to stdout.
+
+To override this default configuration, a ``NO_LAYOUT_LOGGER.METRICS`` logger must be defined explicitly in WebAuthor logging configuration. 
 
 Copyright and License
 ---------------------
