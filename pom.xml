@@ -120,6 +120,17 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.owasp</groupId>
+        <artifactId>dependency-check-maven</artifactId>
+        <configuration>
+          <suppressionFiles>
+            <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
+          </suppressionFiles>
+          <nodeAuditSkipDevDependencies>true</nodeAuditSkipDevDependencies>
+          <nodePackageSkipDevDependencies>true</nodePackageSkipDevDependencies>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
