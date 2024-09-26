@@ -18,12 +18,6 @@ In the server logs
 By default, the monitoring information is written in JSON format in the server logs every minute. You can use various tools to 
 parse this information and present a graphical dashboard.
 
-
-To a Graphite server
---------------------
-
-You have to set the `GRAPHITE_SERVER` environment variable in order for Web Author to send monitoring information to this server.
-
 To AWS CloudWatch
 -----------------
 
