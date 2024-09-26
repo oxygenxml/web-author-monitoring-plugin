@@ -1,7 +1,6 @@
 package com.oxygenxml.webapp.monitoring;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContext;
@@ -9,11 +8,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
-import com.codahale.metrics.graphite.GraphiteReporter;
-import com.codahale.metrics.graphite.GraphiteUDP;
 import com.codahale.metrics.jvm.ClassLoadingGaugeSet;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
@@ -97,10 +93,7 @@ public class MonitoringServlet extends WebappServletPluginExtension {
    * @param registry The metrics registry.
    */
   private void initReporter(MetricRegistry registry) {
-    ScheduledReporter reporter = this.getGraphiteReporter(registry);
-    if (reporter == null) {
-      reporter = this.getLog4jReporter(registry);
-    }
+    ScheduledReporter reporter = this.getLog4jReporter(registry);
     reporter.start(intervalSize, intervalUnit);
   }
   
@@ -120,29 +113,6 @@ public class MonitoringServlet extends WebappServletPluginExtension {
   }
   
   /**
-   * Initialize the graphite reporter.
-   * 
-   * @param registry The metrics registry.
-   * 
-   * @return The graphite reporter, or null if not configured.
-   */
-  private GraphiteReporter getGraphiteReporter(MetricRegistry registry) {
-    InetSocketAddress graphiteServer = getGraphiteServer();
-    if (graphiteServer != null) {
-      // Start a reporter to send data to the graphite server.
-      GraphiteUDP graphite = new GraphiteUDP(graphiteServer);
-      return GraphiteReporter.forRegistry(registry)
-                                          .prefixedWith(METRICS_NAMESPACE)
-                                          .convertRatesTo(TimeUnit.SECONDS)
-                                          .convertDurationsTo(TimeUnit.MILLISECONDS)
-                                          .filter(MetricFilter.ALL)
-                                          .build(graphite);
-      
-    }
-    return null;
-  }
-  
-  /**
    * Initialize a reporter that writes 
    * 
    * @param registry The metrics registry.
@@ -151,26 +121,6 @@ public class MonitoringServlet extends WebappServletPluginExtension {
   private PlainTextReporter getLog4jReporter(MetricRegistry registry) {
     return new PlainTextReporter(registry, 
         METRICS_NAMESPACE, TimeUnit.MILLISECONDS, TimeUnit.MILLISECONDS);
-  }
-
-  /**
-   * @return The configured Graphite server address.
-   */
-  private InetSocketAddress getGraphiteServer() {
-    String graphiteServer = System.getenv("GRAPHITE_SERVER");
-    
-    if (graphiteServer == null || graphiteServer.trim().length() == 0) {
-      return null;
-    }
-
-    String[] graphiteServerHostAndPort = graphiteServer.split(":");
-    String host = graphiteServerHostAndPort[0];
-    int port = 2003;
-    if (graphiteServerHostAndPort.length == 2) {
-      port = Integer.valueOf(graphiteServerHostAndPort[1]);
-    }
-
-    return new InetSocketAddress(host, port);
   }
   
   @Override
