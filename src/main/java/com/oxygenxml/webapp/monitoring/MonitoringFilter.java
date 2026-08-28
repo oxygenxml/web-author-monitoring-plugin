@@ -114,11 +114,10 @@ public class MonitoringFilter implements ServletFilter, PluginExtension {
     if (label != null) {
       Timer duration = getDurationTimer(label);
       Context context = duration.time();
-      ResponseWrapper responseWrapper = new ResponseWrapper((HttpServletResponse) response);
       try {
-        chain.doFilter(request, responseWrapper);
+        chain.doFilter(request, response);
       } finally {
-        int status = responseWrapper.getStatus();
+        int status = response.getStatus();
         if (status != HttpServletResponse.SC_OK && status != HttpServletResponse.SC_NO_CONTENT) {
           Meter errorRate = getErrorMeter(label);
           errorRate.mark();
@@ -186,54 +185,6 @@ public class MonitoringFilter implements ServletFilter, PluginExtension {
       }
     }
     return label;
-  }
-
-  /**
-   * Wrapper for the HTTP response sent to the servlet, so that we can intercept
-   * the status code.
-   * 
-   * @author cristi_talau
-   */
-  private static class ResponseWrapper extends HttpServletResponseWrapper {
-    /**
-     * Constructor.
-     * 
-     * @param response
-     *          The response to wrap.
-     */
-    public ResponseWrapper(HttpServletResponse response) {
-      super(response);
-    }
-
-    /**
-     * The HTTP status message.
-     */
-    private int httpStatus = HttpServletResponse.SC_OK;
-
-    @Override
-    public void sendError(int sc) throws IOException {
-      httpStatus = sc;
-      super.sendError(sc);
-    }
-
-    @Override
-    public void sendError(int sc, String msg) throws IOException {
-      httpStatus = sc;
-      super.sendError(sc, msg);
-    }
-
-    @Override
-    public void setStatus(int sc) {
-      httpStatus = sc;
-      super.setStatus(sc);
-    }
-
-    /**
-     * @return The httpStatus of the response.
-     */
-    public int getStatus() {
-      return httpStatus;
-    }
   }
 
   /**
