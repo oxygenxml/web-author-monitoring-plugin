@@ -6,19 +6,6 @@ import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-import javax.ws.rs.Path;
-
 import com.codahale.metrics.Clock;
 import com.codahale.metrics.ExponentiallyDecayingReservoir;
 import com.codahale.metrics.Meter;
@@ -28,7 +15,16 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.Timer.Context;
 import com.google.common.annotations.VisibleForTesting;
 
+import jakarta.ws.rs.Path;
 import lombok.extern.slf4j.Slf4j;
+import ro.sync.ecss.extensions.api.webapp.plugin.ServletFilter;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.ServletConfig;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.ServletContext;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.ServletException;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.ServletRequest;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.http.FilterChain;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.http.HttpServletRequest;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.http.HttpServletResponse;
 import ro.sync.exml.plugin.PluginExtension;
 import ro.sync.servlet.RESTDocumentControllers;
 import ro.sync.servlet.RESTDocumentManager;
@@ -41,7 +37,7 @@ import ro.sync.servlet.monitoring.MonitoringManager;
  * @author cristi_talau
  */
 @Slf4j
-public class MonitoringFilter implements Filter, PluginExtension {
+public class MonitoringFilter implements ServletFilter, PluginExtension {
  
   /**
    * Label used for edit requests.
@@ -99,10 +95,12 @@ public class MonitoringFilter implements Filter, PluginExtension {
   private ServletContext servletContext;
   
   @Override
-  public void init(FilterConfig filterConfig) throws ServletException {
+  public void init(ServletConfig filterConfig) throws ServletException {
     servletContext = filterConfig.getServletContext();
     monitoringManager = new MonitoringManager();
-    monitoringManager.contextInitialized(new ServletContextEvent(servletContext));
+    
+    jakarta.servlet.ServletContext jakartaServletContext = new ServletContextOxytToJakartaPartialAdapter(servletContext);
+    monitoringManager.contextInitialized(new jakarta.servlet.ServletContextEvent(jakartaServletContext));
     registry = (MetricRegistry) filterConfig.getServletContext().getAttribute(MonitoringServlet.METRICS_REGISTRY_ATTR_NAME);
     
     durations = new ConcurrentHashMap<>();
@@ -110,7 +108,7 @@ public class MonitoringFilter implements Filter, PluginExtension {
   }
 
   @Override
-  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+  public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
     // Split requests by URL into different metrics.
     String label = computeLabel(request);
     if (label != null) {
@@ -210,7 +208,7 @@ public class MonitoringFilter implements Filter, PluginExtension {
     /**
      * The HTTP status message.
      */
-    private int httpStatus = SC_OK;
+    private int httpStatus = HttpServletResponse.SC_OK;
 
     @Override
     public void sendError(int sc) throws IOException {
@@ -277,11 +275,6 @@ public class MonitoringFilter implements Filter, PluginExtension {
       durations.put(label, duration);
     }
     return duration;
-  }
-
-  @Override
-  public void destroy() {
-    monitoringManager.contextDestroyed(new ServletContextEvent(servletContext));
   }
   
   /**

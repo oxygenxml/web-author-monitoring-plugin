@@ -7,15 +7,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +20,13 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
 import ro.sync.ecss.extensions.api.webapp.access.WebappPluginWorkspace;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.ServletConfig;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.ServletContext;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.ServletException;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.ServletRequest;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.http.FilterChain;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.http.HttpServletRequest;
+import ro.sync.ecss.extensions.api.webapp.plugin.servlet.http.HttpServletResponse;
 import ro.sync.exml.workspace.api.PluginWorkspaceProvider;
 import ro.sync.servlet.monitoring.ActiveWebSocketsGauge;
 
@@ -62,11 +60,11 @@ public class MonitoringFilterTest {
     ServletContext context = Mockito.mock(ServletContext.class);
     Mockito.when(context.getAttribute(MonitoringServlet.METRICS_REGISTRY_ATTR_NAME)).thenReturn(registry);
     Mockito.when(context.getAttribute(ActiveWebSocketsGauge.class.getName())).thenReturn(new ActiveWebSocketsGauge());
-    FilterConfig filterConfig = Mockito.mock(FilterConfig.class);
-    Mockito.when(filterConfig.getServletContext()).thenReturn(context );
+    ServletConfig servletConfig = Mockito.mock(ServletConfig.class);
+    Mockito.when(servletConfig.getServletContext()).thenReturn(context);
 
     // Init the filter
-    filter.init(filterConfig);
+    filter.init(servletConfig);
   }
   
   /**
@@ -74,7 +72,6 @@ public class MonitoringFilterTest {
    */
   @After
   public void tearDown() throws Exception {
-    filter.destroy();
   }
   
   /**
@@ -92,7 +89,7 @@ public class MonitoringFilterTest {
 
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     Mockito.when(request.getRequestURL()).thenReturn(new StringBuffer("/path/to/rest/endpoint"));
-    ServletResponse response = Mockito.mock(HttpServletResponse.class);
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
     FilterChain chain = Mockito.mock(FilterChain.class);
     
     // Perform a request
@@ -126,12 +123,12 @@ public class MonitoringFilterTest {
     String labelString = "label";
     Mockito.doReturn(labelString).when(filter).computeLabel(Mockito.<ServletRequest>any());
 
-    ServletRequest request = Mockito.mock(HttpServletRequest.class);
-    ServletResponse response = Mockito.mock(HttpServletResponse.class);
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
     // The servlet returns the wrong status code.
     FilterChain failingChain = new FilterChain() {
       @Override
-      public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
+      public void doFilter(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         ((HttpServletResponse)response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
       }
     };
@@ -172,8 +169,8 @@ public class MonitoringFilterTest {
   public void testMonitoringStatic() throws Exception {
     Mockito.doReturn(null).when(filter).computeLabel(Mockito.<ServletRequest>any());
 
-    ServletRequest request = Mockito.mock(HttpServletRequest.class);
-    ServletResponse response = Mockito.mock(HttpServletResponse.class);
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
     FilterChain chain = Mockito.mock(FilterChain.class);
     
     // Perform a request
