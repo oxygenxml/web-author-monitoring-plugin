@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -75,6 +76,23 @@ public class MonitoringFilterTest {
   }
   
   /**
+   * Creates a response mock that records the status code set on it, the same way
+   * a real response does. Initially, the status is 200 OK.
+   * 
+   * @return The response mock.
+   */
+  private static HttpServletResponse createResponse() {
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    AtomicInteger status = new AtomicInteger(HttpServletResponse.SC_OK);
+    Mockito.doAnswer(invocation -> {
+      status.set(invocation.getArgument(0));
+      return null;
+    }).when(response).setStatus(Mockito.anyInt());
+    Mockito.when(response.getStatus()).thenAnswer(invocation -> status.get());
+    return response;
+  }
+  
+  /**
    * <p><b>Description:</b> Test that the requests are counted correctly.</p>
    * <p><b>Bug ID:</b> EXM-31437</p>
    *
@@ -124,7 +142,6 @@ public class MonitoringFilterTest {
     Mockito.doReturn(labelString).when(filter).computeLabel(Mockito.<ServletRequest>any());
 
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
     // The servlet returns the wrong status code.
     FilterChain failingChain = new FilterChain() {
       @Override
@@ -139,9 +156,9 @@ public class MonitoringFilterTest {
     
     // Perform several failing and non-failing requests.
     for (long i = 0; i < 30; i++) {
-      filter.doFilter(request, response, failingChain);
+      filter.doFilter(request, createResponse(), failingChain);
       Mockito.when(clock.getTick()).thenReturn(1000L * 1000L * 1000L * i);
-      filter.doFilter(request, response, Mockito.mock(FilterChain.class));
+      filter.doFilter(request, createResponse(), Mockito.mock(FilterChain.class));
     }
     
     // Assert it is counted.
@@ -153,8 +170,8 @@ public class MonitoringFilterTest {
     assertEquals(30, timer.getCount());
 
     // Assert that the error rate is around .5.
-    Gauge<?> gauge = registry.getGauges().values().iterator().next();
-    assertEquals(.5, .1, (Double)gauge.getValue());
+    Gauge<?> gauge = registry.getGauges().get("errors.percentage." + labelString);
+    assertEquals(.5, (Double)gauge.getValue(), .1);
   }
   
   /**
