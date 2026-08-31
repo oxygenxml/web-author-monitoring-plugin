@@ -17,6 +17,5 @@
   </runtime>
 
   <extension type="WebappServlet" class="com.oxygenxml.webapp.monitoring.MonitoringServlet"/>
-  <extension type="OxygenServletFilter" class="com.oxygenxml.webapp.monitoring.MonitoringFilter"/>
   <extension type="WorkspaceAccess" class="com.oxygenxml.webapp.monitoring.DocSizeMonitor"/>
 </plugin>
