@@ -40,6 +40,12 @@ public class MonitoringServlet extends ServletPluginExtension {
   public static final String METRICS_REGISTRY_ATTR_NAME = "ro.sync.monitoring.registry";
 
   /**
+   * Servlet context attribute with the {@link MetricFilter} that selects the metrics to write.
+   * It has the name read by Dropwizard's (javax-based) MetricsServlet, used before.
+   */
+  public static final String METRIC_FILTER_ATTR_NAME = "com.codahale.metrics.servlets.MetricsServlet.metricFilter";
+
+  /**
    * The responses must never be cached, they show the current state.
    */
   private static final String NO_CACHE = "must-revalidate,no-cache,no-store";
@@ -54,6 +60,7 @@ public class MonitoringServlet extends ServletPluginExtension {
   private ObjectMapper metricsMapper;
   /**
    * Writes the thread dumps, as Dropwizard's (javax-based) ThreadDumpServlet did.
+   * <code>null</code> if the runtime environment does not allow thread dumps.
    */
   private ThreadDump threadDump;
 
@@ -85,7 +92,12 @@ public class MonitoringServlet extends ServletPluginExtension {
 
     initReporter(registry);
 
-    threadDump = new ThreadDump(ManagementFactory.getThreadMXBean());
+    try {
+      threadDump = new ThreadDump(ManagementFactory.getThreadMXBean());
+    } catch (NoClassDefFoundError e) {
+      // The runtime environment does not allow thread dumps.
+      threadDump = null;
+    }
 
     // Get the metrics registry populated by Web Author.
     registry.register("memory", new MemoryUsageGaugeSet());
@@ -95,8 +107,10 @@ public class MonitoringServlet extends ServletPluginExtension {
     
     registry.register("webauthor", new WebAuthorApiMetrics());
     
+    Object filterAttr = servletContext.getAttribute(METRIC_FILTER_ATTR_NAME);
+    MetricFilter filter = filterAttr instanceof MetricFilter ? (MetricFilter) filterAttr : MetricFilter.ALL;
     metricsMapper = new ObjectMapper().registerModule(
-        new MetricsModule(TimeUnit.SECONDS, TimeUnit.SECONDS, false, MetricFilter.ALL));
+        new MetricsModule(TimeUnit.SECONDS, TimeUnit.SECONDS, false, filter));
   }
 
   /**
@@ -137,6 +151,10 @@ public class MonitoringServlet extends ServletPluginExtension {
     resp.setStatus(HttpServletResponse.SC_OK);
     resp.setContentType("text/plain");
     resp.setHeader("Cache-Control", NO_CACHE);
+    if (threadDump == null) {
+      resp.getWriter().println("Sorry your runtime environment does not allow to dump threads.");
+      return;
+    }
     try (OutputStream output = resp.getOutputStream()) {
       threadDump.dump(includeMonitors, includeSynchronizers, output);
     }

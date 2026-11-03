@@ -11,6 +11,10 @@ In the browser
 To access the information you should access one of the following URLs Note that you have to be logged in the Administration Page when visiting these URLs.
   - `http://host:port/oxygen-xml-web-author/plugins-dispatcher/monitoring/threads` - to get thread dumps of all threads
   - `http://host:port/oxygen-xml-web-author/plugins-dispatcher/monitoring/metrics` - to get various metrics about Web Author
+
+The `metrics` URL accepts the `pretty=true` parameter to indent the JSON. The `threads` URL accepts the `monitors=false` and `synchronizers=false` parameters to leave out the locked monitors and synchronizers.
+
+Starting with Web Author 29, the plugin no longer uses the Dropwizard `MetricsServlet` and `ThreadDumpServlet` (they are based on `javax.servlet`, which Tomcat 10 no longer provides). The metrics are written with the same defaults as before: rates and durations in seconds and no histogram samples. A `com.codahale.metrics.MetricFilter` set in the `com.codahale.metrics.servlets.MetricsServlet.metricFilter` servlet context attribute is still used to select the metrics. The following servlet context parameters are no longer read: `com.codahale.metrics.servlets.MetricsServlet.rateUnit`, `.durationUnit`, `.showSamples`, `.allowedOrigin` and `.jsonpCallback`.
   
 In the server logs
 ------------------

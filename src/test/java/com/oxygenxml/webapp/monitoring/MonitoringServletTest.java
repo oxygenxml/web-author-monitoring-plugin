@@ -19,6 +19,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,15 +69,7 @@ public class MonitoringServletTest {
     when(workspace.getMonitoringStats()).thenReturn(stats);
     PluginWorkspaceProvider.setPluginWorkspace(workspace);
 
-    registry = new MetricRegistry();
-    ServletContext context = mock(ServletContext.class);
-    when(context.getAttribute(MonitoringServlet.METRICS_REGISTRY_ATTR_NAME)).thenReturn(registry);
-    ServletConfig config = mock(ServletConfig.class);
-    when(config.getServletContext()).thenReturn(context);
-
-    // A long interval, so that the reporter does not log during the test.
-    servlet = new MonitoringServlet(1, TimeUnit.HOURS);
-    servlet.init(config);
+    initServlet(null);
 
     responseBody = new ByteArrayOutputStream();
     resp = mock(HttpServletResponse.class);
@@ -91,6 +84,46 @@ public class MonitoringServletTest {
   @After
   public void tearDown() {
     PluginWorkspaceProvider.setPluginWorkspace(null);
+  }
+
+  /**
+   * Creates and initializes the servlet, with a new registry.
+   *
+   * @param metricFilter The value of the metric filter attribute in the servlet context.
+   *
+   * @throws Exception If it fails.
+   */
+  private void initServlet(Object metricFilter) throws Exception {
+    registry = new MetricRegistry();
+    ServletContext context = mock(ServletContext.class);
+    when(context.getAttribute(MonitoringServlet.METRICS_REGISTRY_ATTR_NAME)).thenReturn(registry);
+    when(context.getAttribute(MonitoringServlet.METRIC_FILTER_ATTR_NAME)).thenReturn(metricFilter);
+    ServletConfig config = mock(ServletConfig.class);
+    when(config.getServletContext()).thenReturn(context);
+
+    // A long interval, so that the reporter does not log during the test.
+    servlet = new MonitoringServlet(1, TimeUnit.HOURS);
+    servlet.init(config);
+  }
+
+  /**
+   * <p><b>Description:</b> The metric filter from the servlet context selects the metrics to write,
+   * as with the Dropwizard MetricsServlet that was used before.</p>
+   * <p><b>Bug ID:</b> WA-10428</p>
+   *
+   * @throws Exception If it fails.
+   */
+  @Test
+  public void testMetricFilter() throws Exception {
+    initServlet((MetricFilter) (name, metric) -> name.startsWith("memory."));
+    registry.counter("test-counter").inc();
+
+    servlet.doGet(request("/monitoring/metrics", new HashMap<>()), resp);
+
+    JsonNode metrics = new ObjectMapper().readTree(responseBody.toString(StandardCharsets.UTF_8.name()));
+    assertTrue(metrics.get("gauges").has("memory.heap.used"));
+    assertFalse(metrics.get("gauges").has("threads.count"));
+    assertFalse(metrics.get("counters").has("test-counter"));
   }
 
   /**
