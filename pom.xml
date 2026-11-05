@@ -28,10 +28,10 @@
   </properties>
 
   <dependencies>
-    <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-servlet -->
+    <!-- Not metrics-servlets: it is based on javax.servlet, which Tomcat 10 no longer provides. -->
     <dependency>
         <groupId>io.dropwizard.metrics</groupId>
-        <artifactId>metrics-servlets</artifactId>
+        <artifactId>metrics-json</artifactId>
         <version>${metrics.version}</version>
         <!-- Web Author already brings a newer jackson databind -->
         <exclusions>
